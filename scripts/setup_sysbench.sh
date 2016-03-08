@@ -3,6 +3,14 @@
 MYSQL_PASS=$1
 MYSQL_PASS_OLD=$2
 
+systemctl stop mysql
+yum-complete-transaction
+yum remove -y MySQL-server
+rm -rf /var/lib/mysql/
+rm -f /home/*/mysql_data/*
+rm -rf /tools
+sleep 1
+
 echo "
 # MariaDB 10.0 RedHat repository list - created 2015-08-20 13:31 UTC
 # http://mariadb.org/mariadb/repositories/

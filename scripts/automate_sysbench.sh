@@ -11,8 +11,10 @@ fi
 #     scp -r /root/sysbench_utilities.tgz $ssh_id:/root/scripts/
 # done
 
+rm -f /tmp/vm_hostnames
+
 for i in $(seq $1 $2); do
-  echo $(arp -e | grep $(virsh domiflist "vm$i" | tail -n 2  | head -n 1 | awk -F' ' '{print $NF}') | tail -n 1 | awk -F' ' '{print $1}') > /tmp/vm_hostnames
+  echo $(arp -e | grep $(virsh domiflist "vm$i" | tail -n 2  | head -n 1 | awk -F' ' '{print $NF}') | tail -n 1 | awk -F' ' '{print $1}') >> /tmp/vm_hostnames
 done
 
 ./multivm_setup_initiate.py /tmp/vm_hostnames my.cnf.example
