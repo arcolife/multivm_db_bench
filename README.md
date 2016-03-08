@@ -8,7 +8,12 @@ This project is WIP. Use at your own risk
 
 ## Usage
 
-NOTE: currently some methods are commented in `multivm_setup_initiate.py`.
+NOTE: currently some methods might be commented in `multivm_setup_initiate.py`.
+      Use as per requirement. Also, if you're using pssh py package less than
+      0.90, you might face ascii decoding related error. Just edit the ssh_client.py
+      file as shown in traceback, and change the 'ascii' part to 'utf-8' and run again.
+      This is incase, you're uanble to upgrade to 0.90 (maybe it's not available on pip yet)
+      or any other reason.
 
 - For entry point use:
 `./automate_sysbench.sh <vm seq# BEGIN> <vm seq# END>`
