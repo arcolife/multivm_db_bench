@@ -58,10 +58,13 @@ def delete_files(client, hosts, files_to_delete, target_dir):
     for host in hosts:
         print("host: %s -- exit_code: %s" %(host, output[host]['exit_code']))
 
-def execute_script(client, hosts, target_dir, script_name, args):
+def execute_script(client, hosts, target_dir, script_name, args, nohup=False):
     script_path =  os.path.join(target_dir, script_name)
     print("\nexecuting script: '%s %s'..\n" % (script_path, args))
-    output = client.run_command('%s %s' % (script_path, args))
+    if nohup:
+        output = client.run_command('nohup %s %s &' % (script_path, args))
+    else:
+        output = client.run_command('%s %s' % (script_path, args))
     client.get_exit_codes(output)
     for host in hosts:
         print("host: %s -- exit_code: %s" %(host, output[host]['exit_code']))
@@ -97,7 +100,8 @@ if __name__=='__main__':
     #                            config.get('client', 'password')))
 
     execute_script(client, hosts, DIRNAME, 'start_sysbench_tests.sh',
-                    '%s %s' % (USERNAME, config.get('client', 'password')))
+                    '%s %s' % (USERNAME, config.get('client', 'password')),
+                    nohup=True)
 
     # display_files(client, hosts, "\noutput AFTER DELETING files..\n",
     # FILENAMES, DIRNAME)

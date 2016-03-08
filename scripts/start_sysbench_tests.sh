@@ -51,7 +51,7 @@ for aio in native; do
   # run the workload (add --max-requests=<n> to run certain number of transactions, default 10000)
   # sysbench --test=oltp --num-threads=12 --max-requests=1000000 --max-time=900 run > test.log
   echo "starting sysbench test for $aio.."
-  ./run-sysbench-series.sh > results/"$release_tag"_r"$rhel_version"_"${db_ver::-1}"_"$buffer_pool_size"_"$aio".txt 2>&1 &
+  nohup ./run-sysbench-series.sh > results/"$release_tag"_r"$rhel_version"_"${db_ver::-1}"_"$buffer_pool_size"_"$aio".txt 2>&1 &
   # if [ ! $? -eq 0 ]; then
   #     echo "$(date +'%Y-%m-%d %H:%M:%S'): failed to run sysbench.." >> /tmp/sysbench.log
   #     exit 1
