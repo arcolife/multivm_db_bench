@@ -11,7 +11,6 @@ from pssh import ParallelSSHClient, utils
 
 USERNAME='root'
 DIRNAME = '/root/'
-# MYSQL_PASS='90feet-'
 UTIL_NAMES = ['sysbench_utilities.tgz', 'sysbench-0.4.12.tar.gz', 'my.cnf.example']
 SCRIPT_NAMES = ['setup_sysbench.sh', 'start_sysbench_tests.sh']
 # SCRIPT_NAMES = ['automate_sysbench.sh', 'setup_sysbench.sh',
@@ -62,7 +61,8 @@ def execute_script(client, hosts, target_dir, script_name, args, nohup=False):
     script_path =  os.path.join(target_dir, script_name)
     print("\nexecuting script: '%s %s'..\n" % (script_path, args))
     if nohup:
-        output = client.run_command('nohup %s %s &' % (script_path, args))
+        output = client.run_command('nohup  %s %s > %s.out 2> %s.err < /dev/null &' %
+                                    (script_path, args, script_name, script_name))
     else:
         output = client.run_command('%s %s' % (script_path, args))
     client.get_exit_codes(output)

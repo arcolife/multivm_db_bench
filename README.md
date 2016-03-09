@@ -8,47 +8,70 @@ This project is WIP. Use at your own risk
 
 ## Usage
 
-NOTE: currently some methods might be commented in `multivm_setup_initiate.py`.
-      Use as per requirement. Also, if you're using pssh py package less than
-      0.90, you might face ascii decoding related error. Just edit the ssh_client.py
-      file as shown in traceback, and change the 'ascii' part to 'utf-8' and run again.
-      This is incase, you're uanble to upgrade to 0.90 (maybe it's not available on pip yet)
-      or any other reason.
-
-- For entry point use:
-`./automate_sysbench.sh <vm seq# BEGIN> <vm seq# END>`
-
-Assuming vms are named in sequential order, as vm1, vm2 etc..
-Example, on doing `virsh list` we would get vm1, vm2, etc..
-So `./automate_sysbench.sh 2 4` would result in running this
-setup on vm2, vm3 and vm4.
-
-- Before starting, change the mysql passwords as under
-the following fils/sections:
+For entry point use (from within `scripts/` folder):
 
 ```
-multivm_setup_initiate.py: # MYSQL_PASS='90feet-'
-my.cnf.example: password=90feet-
+./automate_sysbench.sh <vm seq# BEGIN> <vm seq# END>
 ```
 
-- Needs the following files in the same directory:
+- For example: `./automate_sysbench.sh 2 4` would run this setup
+  on vm2, vm3 and vm4.
+- Assuming: vms are named in sequential order, as vm1, vm2 etc..
+  Example, on doing `virsh list` we would get vm1, vm2, etc..
 
-```
-multivm_setup_initiate.py
-my.cnf.example
-setup_sysbench.sh
-start_sysbench_tests.sh
-sysbench_utilities.tgz
-sysbench-0.4.12.tar.gz <optional; downloads if not present>
-```
+__NOTE__:
+  - Currently some pssh methods might be commented out in
+    `multivm_setup_initiate.py`. Use as per requirement..
+  - Also, if you're using `parallel-ssh==0.80.7` python2 package less than 0.90,
+    you might face ascii decoding related error.
+      - Just edit the file: `/usr/lib/python2.7/site-packages/pssh/ssh_client.py`
+      (as shown in traceback), and change the 'ascii' part to 'utf-8' as shown below:
 
-- Inside VMs, these scripts run:
+      ```
+      # change this: output = line.strip().decode('ascii')
+      # to this: output = line.strip().decode('utf-8')
+      ```
 
-```
-./start_sysbench_tests.sh root <mysql pass>
-./setup_sysbench.sh <mysql pass> <mysql old pass>
-# leave old pass blank if running first time
-```
+      ..and run again. This is incase, you're uanble to upgrade to 0.90
+      (maybe it's not available on pip yet) or any other reason.
+
+## PREREQUISITES
+
+  1. Before starting, change the mysql password in config file `my.cnf.example`
+  as under the following section/parameter:
+
+    ```
+    [client]
+    password=90feet-
+    ```
+
+  2. Before running, ensure the following files in the same directory as `automate_sysbench.sh`:
+
+    ```
+    multivm_setup_initiate.py
+    my.cnf.example
+    setup_sysbench.sh
+    start_sysbench_tests.sh
+
+    sysbench_utilities.tgz
+    sysbench-0.4.12.tar.gz <optional; downloaded by script if not present>
+    ```
+
+  3. The VM(s) should be up and running, and have the folders already mounted,
+    as per the aio modes.
+
+      - `/home/native` with `aio=native`
+      - `/home/threads` with `aio=threads`
+
+- __NOTE__: `sysbench_utilities.tgz` is currently not part of this repo. Will release soon.
+
+- __FYI__: Inside VMs, these scripts run:
+
+  ```
+  ./start_sysbench_tests.sh root <mysql pass>
+  ./setup_sysbench.sh <mysql pass> <mysql old pass>
+  # leave old pass blank if running first time
+  ```
 
 ## TODO:
 
