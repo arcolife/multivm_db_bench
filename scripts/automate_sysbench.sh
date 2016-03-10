@@ -28,6 +28,7 @@ for i in `cat /tmp/vm_hostnames`; do
   ssh root@$i 'kill -9 $(pgrep run-sysbench); kill -9 $(pgrep profit3)'
   echo "cleaning up on: $i"
   ssh root@$i "rm -f /root/scripts/results/{*$AIO*.log,*$AIO*.txt}"
+  ssh root@$i "echo 2 > /proc/sys/vm/drop_caches"
 done
 
 ./multivm_setup_initiate.py /tmp/vm_hostnames my.cnf.example $AIO_MODE $OLTP_TABLE_SIZE
