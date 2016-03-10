@@ -100,7 +100,7 @@ if __name__=='__main__':
                 FILENAMES, DIRNAME)
 
     execute_script(client, hosts, DIRNAME, 'setup_sysbench.sh',
-            config.get('client', 'password'))
+            '%s %s' % (AIO_MODE, config.get('client', 'password')))
     execute_script(client, hosts, DIRNAME, 'start_sysbench_tests.sh',
             '%s %s %s %s' % (USERNAME, config.get('client', 'password'),
                 AIO_MODE, OLTP_TABLE_SIZE),
