@@ -82,10 +82,14 @@ def execute_script(client, hosts, target_dir, script_name, args, nohup=False):
         record_output(output[host]['stdout'], host, script_name)
 
 if __name__=='__main__':
-    hosts = set(open(sys.argv[1], 'rb').read().splitlines())
-
-    config = configparser.ConfigParser()
-    config.read(sys.argv[2])
+    try:
+        hosts = set(open(sys.argv[1], 'rb').read().splitlines())
+        config = configparser.ConfigParser()
+        config.read(sys.argv[2])
+        AIO_MODE = sys.argv[3]
+    except:
+        quit("""Usage: \n$ ./multivm_setup_initiate.py \
+        [vm_hostnames path]  [cfg file]  [AIO mode: native / threads]""")
 
     while '' in hosts: hosts.remove('')
     client = ParallelSSHClient(hosts, user=USERNAME)
@@ -103,10 +107,10 @@ if __name__=='__main__':
                 FILENAMES, DIRNAME)
 
     execute_script(client, hosts, DIRNAME, 'setup_sysbench.sh',
-                config.get('client', 'password'))
-    # execute_script(client, hosts, DIRNAME, 'start_sysbench_tests.sh',
-    #                 '%s %s' % (USERNAME, config.get('client', 'password')),
-    #                 nohup=True)
+            config.get('client', 'password'))
+    execute_script(client, hosts, DIRNAME, 'start_sysbench_tests.sh',
+            '%s %s %s' % (USERNAME, config.get('client', 'password'), AIO_MODE),
+            nohup=False)
 
     # OPTIONAL: setup_sysbench script makes it sure that previous installations
     # are removed. So you won't probably need this. But, just in case,
