@@ -42,7 +42,7 @@ def make_executable(client, hosts, target_files, target_dir):
             pass
 
 def copy_files(client, files_to_copy, target_dir):
-    print("\ncopying file..\n")
+    print("\ncopying files to VMs..\n")
     for filename in files_to_copy:
         client.copy_file('./%s'%(filename),
                         os.path.join(target_dir, '%s' % (filename)))
@@ -60,7 +60,7 @@ def delete_files(client, hosts, files_to_delete, target_dir):
 def record_output(generator_object, host, script_name):
     log_file = '/tmp/%s.%s.log' % (host, script_name)
     f = open(log_file, 'wb')
-    print("Hold on.. Logging to: %s" % log_file)
+    print("Hold on.. Logging VM outputs to your host under: %s" % log_file)
     for line in generator_object:
         f.write(line.encode('utf-8') + "\n")
     f.close()
