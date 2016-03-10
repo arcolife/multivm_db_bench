@@ -20,6 +20,24 @@ For entry point use (from within `scripts/` folder):
 - Assuming: vms are named in sequential order, as vm1, vm2 etc..
   Example, on doing `virsh list` we would get vm1, vm2, etc..
 
+__IMPORTANT__
+
+  There's currently an issue with pssh and background process. It's being exited
+  when ssh session ends.. This affects the execution of sysbench on VMs. So run
+  this software as demonstrated in following example:
+
+  - step 1: `./automate_sysbench.sh 1 8`
+  - step 2: `./run_sysbench_display_stats_hack.sh`
+
+  - make sure this is same in both scripts ..whatever you set it to be.
+    ```
+    AIO_MODE='native'
+    OLTP_TABLE_SIZE=1000000
+    ```
+
+  - ..then check if results are popping up in a VM, under `/root/scripts/results`
+
+
 __NOTE__:
   - Currently some pssh methods might be commented out in
     `multivm_setup_initiate.py`. Use as per requirement..
