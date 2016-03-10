@@ -8,7 +8,7 @@ This project is WIP. Use at your own risk
 
 ## Usage
 
-Refer to Prerequisites section fist.
+Refer to Prerequisites section first.
 For entry point use (from within `scripts/` folder):
 
 ```
@@ -88,6 +88,9 @@ __NOTE__:
 
       - `/home/native` with `aio=native`
       - `/home/threads` with `aio=threads`
+
+  5. Install the python2 module `parallel-ssh` via pip.
+    (you'd have to temporarily enable epel repo for installing pip on rhel)
 
 - __FYI__: Inside VMs, these scripts run:
 
