@@ -13,8 +13,6 @@ USERNAME='root'
 DIRNAME = '/root/'
 UTIL_NAMES = ['sysbench_utilities.tgz', 'sysbench-0.4.12.tar.gz', 'my.cnf.example']
 SCRIPT_NAMES = ['setup_sysbench.sh', 'start_sysbench_tests.sh']
-# SCRIPT_NAMES = ['automate_sysbench.sh', 'setup_sysbench.sh',
-#                 'multivm_setup_initiate.py', 'start_sysbench_tests.sh']
 
 FILENAMES = SCRIPT_NAMES + UTIL_NAMES
 
@@ -95,8 +93,6 @@ if __name__=='__main__':
     while '' in hosts: hosts.remove('')
     client = ParallelSSHClient(hosts, user=USERNAME)
 
-    # display_files(client, hosts, "\noutput BEFORE DELETING files..\n",
-    # FILENAMES, DIRNAME)
     delete_files(client, hosts, FILENAMES, DIRNAME)
     copy_files(client, FILENAMES, DIRNAME)
     make_executable(client, hosts, SCRIPT_NAMES, DIRNAME)
@@ -109,10 +105,3 @@ if __name__=='__main__':
             '%s %s %s %s' % (USERNAME, config.get('client', 'password'),
                 AIO_MODE, OLTP_TABLE_SIZE),
             nohup=False)
-
-    # OPTIONAL: setup_sysbench script makes it sure that previous installations
-    # are removed. So you won't probably need this. But, just in case,
-    # if mysql installation exists previously, supply old password as well
-    # execute_script(client, hosts, DIRNAME, 'setup_sysbench.sh',
-    #                 '%s %s' % (config.get('client', 'password'),
-    #                            config.get('client', 'password')))
