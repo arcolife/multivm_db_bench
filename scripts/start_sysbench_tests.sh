@@ -9,14 +9,15 @@ if [[ ! $aio =~ ^(native|threads)$ ]]; then
   exit 1
 fi
 
-cd /root/scripts/
 
 buffer_pool_size=$(grep buffer_pool_size /etc/my.cnf | awk -F' ' '{print $3}')
 release_tag=$(uname -r | awk -F'-' '{print $2}' |  awk -F'.' '{print $1}')
 rhel_version=$(awk -F' ' '{print $(NF-1)}' /etc/redhat-release)
 db_ver=$(mysql --version  | awk -F' ' '{print $5}')
 
-# # for aio in native threads; do
+cd /root/scripts/
+RESULTS_NAME="$release_tag"_r"$rhel_version"_"${db_ver::-1}"_"$buffer_pool_size"_"$aio"_"$(date +'%Y-%m-%d_%H:%M:%S')"
+
 systemctl stop mysql
 
 sed -i 's#innodb_log_group_home_dir.*#innodb_log_group_home_dir = /home/'$aio'/mysql_data#'g /etc/my.cnf
@@ -52,14 +53,15 @@ if [ ! $? -eq 0 ]; then
 fi
 echo "done preparing oltp tables for $aio.."
 
-# run the workload (add --max-requests=<n> to run certain number of transactions, default 10000)
+# run the test workload (add --max-requests=<n> to run certain number of transactions, default 10000)
 # sysbench --test=oltp --num-threads=12 --max-requests=1000000 --max-time=900 run > test.log
+
 echo "starting sysbench test for $aio.."
-./run-sysbench-series.sh >> results/"$release_tag"_r"$rhel_version"_"${db_ver::-1}"_"$buffer_pool_size"_"$aio"_"$(date +'%Y-%m-%d_%H:%M:%S')".txt 2>&1 &
+./run-sysbench-series.sh >> results/$RESULTS_NAME.txt 2>&1 &
+# nohup ./run-sysbench-series.sh > results/$RESULTS_NAME.txt 2> results/$RESULTS_NAME.err < /dev/null &
+
 # if [ ! $? -eq 0 ]; then
 #     echo "$(date +'%Y-%m-%d %H:%M:%S'): failed to run sysbench.." >> /tmp/sysbench."$aio".error.log
 #     exit 1
 # fi
 # echo "ending sysbench test for $aio.."
-
-# # done
