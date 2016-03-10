@@ -21,9 +21,6 @@ for i in $(seq $1 $2); do
 done
 # for i in $(seq $1 $2); do echo "$i $(arp -e | grep $(virsh domiflist "vm$i" | tail -n 2  | head -n 1 | awk -F' ' '{print $NF}') | tail -n 1 | awk -F' ' '{print $1}')"; done;
 
-for i in `cat /tmp/vm_hostnames`; do
-  # ssh root@$i "ls -lh /root/scripts/results /root/scripts/"
-done
 
 echo
 for i in `cat /tmp/vm_hostnames`; do
