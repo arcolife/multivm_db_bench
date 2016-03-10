@@ -3,6 +3,11 @@
 MYSQL_PASS=$1
 MYSQL_PASS_OLD=$2
 
+if [[ -z $MYSQL_PASS ]]; then
+  echo "need MYSQL_PASS as arg 2"
+  exit 1
+fi
+
 systemctl stop mysql
 yum-complete-transaction
 yum remove -y MySQL-server
@@ -46,10 +51,10 @@ systemctl stop mysql
 
 cp /root/my.cnf.example /etc/my.cnf
 
-mkdir -p /home/native/mysql_data/
-chown -R mysql:mysql /home/native/mysql_data/
-chcon -R --type=mysqld_db_t /home/native/mysql_data/
-chgrp -R mysql /home/native/mysql_data/
+mkdir -p /home/{native,threads}/mysql_data/
+chown -R mysql:mysql /home/{native,threads}/mysql_data/
+chcon -R --type=mysqld_db_t /home/{native,threads}/mysql_data/
+chgrp -R mysql /home/{native,threads}/mysql_data/
 
 restorecon -R /var/lib/mysql/
 chown -R mysql:mysql /var/lib/mysql/
