@@ -26,7 +26,7 @@ systemctl start mysql
 if [ ! $? -eq 0 ]; then
   systemctl restart mysql
   if [ ! $? -eq 0 ]; then
-    echo "$(date +'%Y-%m-%d %H:%M:%S'): MariaDB failed to start.." >> /tmp/sysbench."$aio".log
+    echo "$(date +'%Y-%m-%d %H:%M:%S'): MariaDB failed to start.." >> /tmp/sysbench."$aio".error.log
     exit 1
   fi
 fi
@@ -39,7 +39,7 @@ mysql -e 'drop database sbtest'
 mysql -e 'create database sbtest'
 
 if [ ! $? -eq 0 ]; then
-    echo "$(date +'%Y-%m-%d %H:%M:%S'): unable to create database sbtest.." >> /tmp/sysbench."$aio".log
+    echo "$(date +'%Y-%m-%d %H:%M:%S'): unable to create database sbtest.." >> /tmp/sysbench."$aio".error.log
     exit 1
 fi
 
@@ -47,7 +47,7 @@ fi
 echo "preparing oltp tables for $aio.."
 sysbench prepare --test=oltp --mysql-table-engine=innodb --oltp-table-size=1000000 --mysql-user=$MYSQL_USERNAME --mysql-password=$MYSQL_PASS
 if [ ! $? -eq 0 ]; then
-    echo "$(date +'%Y-%m-%d %H:%M:%S'): failed to prepare database sbtest.." >> /tmp/sysbench."$aio".log
+    echo "$(date +'%Y-%m-%d %H:%M:%S'): failed to prepare database sbtest.." >> /tmp/sysbench."$aio".error.log
     exit 1
 fi
 echo "done preparing oltp tables for $aio.."
@@ -57,7 +57,7 @@ echo "done preparing oltp tables for $aio.."
 echo "starting sysbench test for $aio.."
 ./run-sysbench-series.sh >> results/"$release_tag"_r"$rhel_version"_"${db_ver::-1}"_"$buffer_pool_size"_"$aio"_"$(date +'%Y-%m-%d_%H:%M:%S')".txt 2>&1 &
 # if [ ! $? -eq 0 ]; then
-#     echo "$(date +'%Y-%m-%d %H:%M:%S'): failed to run sysbench.." >> /tmp/sysbench."$aio".log
+#     echo "$(date +'%Y-%m-%d %H:%M:%S'): failed to run sysbench.." >> /tmp/sysbench."$aio".error.log
 #     exit 1
 # fi
 # echo "ending sysbench test for $aio.."

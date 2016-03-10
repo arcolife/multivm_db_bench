@@ -70,3 +70,5 @@ tar -xvzf sysbench_utilities.tgz
 mv tools/ /
 
 systemctl start mysql
+
+echo "sysbench setup completed!"
