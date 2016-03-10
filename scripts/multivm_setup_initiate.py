@@ -57,19 +57,29 @@ def delete_files(client, hosts, files_to_delete, target_dir):
     for host in hosts:
         print("host: %s -- exit_code: %s" %(host, output[host]['exit_code']))
 
+def record_output(generator_object, host, script_name):
+    log_file = '/tmp/%s.%s.log' % (host, script_name)
+    f = open(log_file, 'wb')
+    print("Hold on.. Logging to: %s" % log_file)
+    for line in generator_object:
+        f.write(line.encode('utf-8') + "\n")
+    f.close()
+
 def execute_script(client, hosts, target_dir, script_name, args, nohup=False):
     script_path =  os.path.join(target_dir, script_name)
     print("\nexecuting script: '%s %s'..\n" % (script_path, args))
     if nohup:
-        output = client.run_command('nohup  %s %s > %s.out 2> %s.err < /dev/null &' %
-                                    (script_path, args, script_name, script_name))
+        CMD = 'nohup  %s %s > /tmp/%s.out 2> /tmp/%s.err < /dev/null &' % \
+                            (script_path, args, script_name, script_name)
     else:
-        output = client.run_command('%s %s' % (script_path, args))
+        CMD = '%s %s' % (script_path, args)
+
+    output = client.run_command(CMD)
     client.get_exit_codes(output)
     for host in hosts:
         print("host: %s -- exit_code: %s" %(host, output[host]['exit_code']))
-        for line in output[host]['stdout']: print line
-
+        # for line in output[host]['stdout']: print line
+        record_output(output[host]['stdout'], host, script_name)
 
 if __name__=='__main__':
     hosts = set(open(sys.argv[1], 'rb').read().splitlines())
@@ -80,12 +90,13 @@ if __name__=='__main__':
     while '' in hosts: hosts.remove('')
     client = ParallelSSHClient(hosts, user=USERNAME)
 
-    display_files(client, hosts, "\noutput BEFORE DELETING files..\n",
-    FILENAMES, DIRNAME)
-    delete_files(client, hosts, FILENAMES, DIRNAME)
-
-    display_files(client, hosts, "\noutput BEFORE COPYING files..\n",
-                FILENAMES, DIRNAME)
+    # display_files(client, hosts, "\noutput BEFORE DELETING files..\n",
+    # FILENAMES, DIRNAME)
+    # delete_files(client, hosts, FILENAMES, DIRNAME)
+    # display_files(client, hosts, "\noutput AFTER DELETING files..\n",
+    # FILENAMES, DIRNAME)
+    # display_files(client, hosts, "\noutput BEFORE COPYING files..\n",
+    #             FILENAMES, DIRNAME)
     copy_files(client, FILENAMES, DIRNAME)
     make_executable(client, hosts, SCRIPT_NAMES, DIRNAME)
     display_files(client, hosts, "\noutput AFTER COPYING files..\n",
@@ -93,16 +104,13 @@ if __name__=='__main__':
 
     execute_script(client, hosts, DIRNAME, 'setup_sysbench.sh',
                 config.get('client', 'password'))
+    # execute_script(client, hosts, DIRNAME, 'start_sysbench_tests.sh',
+    #                 '%s %s' % (USERNAME, config.get('client', 'password')),
+    #                 nohup=True)
 
+    # OPTIONAL: setup_sysbench script makes it sure that previous installations
+    # are removed. So you won't probably need this. But, just in case,
     # if mysql installation exists previously, supply old password as well
     # execute_script(client, hosts, DIRNAME, 'setup_sysbench.sh',
     #                 '%s %s' % (config.get('client', 'password'),
     #                            config.get('client', 'password')))
-
-    execute_script(client, hosts, DIRNAME, 'start_sysbench_tests.sh',
-                    '%s %s' % (USERNAME, config.get('client', 'password')),
-                    nohup=True)
-
-    # display_files(client, hosts, "\noutput AFTER DELETING files..\n",
-    # FILENAMES, DIRNAME)
-    # delete_files(client, hosts, FILENAMES, DIRNAME)
