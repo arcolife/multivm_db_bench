@@ -8,6 +8,7 @@ This project is WIP. Use at your own risk
 
 ## Usage
 
+Refer to Prerequisites section fist.
 For entry point use (from within `scripts/` folder):
 
 ```
@@ -45,7 +46,14 @@ __NOTE__:
     password=90feet-
     ```
 
-  2. Before running, ensure the following files in the same directory as `automate_sysbench.sh`:
+  2. Ensure that `automate_sysbench.sh` has the following parameters as per your need:
+
+    ```
+    AIO_MODE='native'
+    OLTP_TABLE_SIZE=1000000
+    ```
+
+  3. Before running, ensure the following files in the same directory as `automate_sysbench.sh`:
 
     ```
     multivm_setup_initiate.py
@@ -57,20 +65,17 @@ __NOTE__:
     sysbench-0.4.12.tar.gz <optional; downloaded by script if not present>
     ```
 
-  3. The VM(s) should be up and running, and have the folders already mounted,
+  4. The VM(s) should be up and running, and have the folders already mounted,
     as per the aio modes.
 
       - `/home/native` with `aio=native`
       - `/home/threads` with `aio=threads`
 
-- __NOTE__: `sysbench_utilities.tgz` is currently not part of this repo. Will release soon.
-
 - __FYI__: Inside VMs, these scripts run:
 
   ```
-  ./start_sysbench_tests.sh root <mysql pass>
-  ./setup_sysbench.sh <mysql pass> <mysql old pass>
-  # leave old pass blank if running first time
+  ./start_sysbench_tests.sh
+  ./setup_sysbench.sh
   ```
 
 ## TODO:
