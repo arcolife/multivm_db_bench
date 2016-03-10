@@ -50,7 +50,7 @@ def copy_files(client, files_to_copy, target_dir):
     client.pool.join()
 
 def delete_files(client, hosts, files_to_delete, target_dir):
-    print("\ndeleting file..\n")
+    print("\ndeleting existing files..\n")
     output = client.run_command('rm -f ' + os.path.join(target_dir, '{%s}' %
                                                 (','.join(files_to_delete))))
     client.get_exit_codes(output)
@@ -97,11 +97,7 @@ if __name__=='__main__':
 
     # display_files(client, hosts, "\noutput BEFORE DELETING files..\n",
     # FILENAMES, DIRNAME)
-    # delete_files(client, hosts, FILENAMES, DIRNAME)
-    # display_files(client, hosts, "\noutput AFTER DELETING files..\n",
-    # FILENAMES, DIRNAME)
-    # display_files(client, hosts, "\noutput BEFORE COPYING files..\n",
-    #             FILENAMES, DIRNAME)
+    delete_files(client, hosts, FILENAMES, DIRNAME)
     copy_files(client, FILENAMES, DIRNAME)
     make_executable(client, hosts, SCRIPT_NAMES, DIRNAME)
     display_files(client, hosts, "\noutput AFTER COPYING files..\n",
