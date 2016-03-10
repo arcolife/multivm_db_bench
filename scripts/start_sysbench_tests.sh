@@ -3,6 +3,7 @@
 MYSQL_USERNAME=$1
 MYSQL_PASS=$2
 aio=$3
+oltp_size=$4
 
 if [[ ! $aio =~ ^(native|threads)$ ]]; then
   echo "wrong aio mode selected. choose native/threads"
@@ -57,7 +58,7 @@ echo "done preparing oltp tables for $aio.."
 # sysbench --test=oltp --num-threads=12 --max-requests=1000000 --max-time=900 run > test.log
 
 echo "starting sysbench test for $aio.."
-./run-sysbench-series.sh >> results/$RESULTS_NAME.txt 2>&1 &
+./run-sysbench-series.sh $MYSQL_USERNAME $MYSQL_PASS $aio $oltp_size >> results/$RESULTS_NAME.txt 2>&1 &
 # nohup ./run-sysbench-series.sh > results/$RESULTS_NAME.txt 2> results/$RESULTS_NAME.err < /dev/null &
 
 # if [ ! $? -eq 0 ]; then

@@ -87,9 +87,10 @@ if __name__=='__main__':
         config = configparser.ConfigParser()
         config.read(sys.argv[2])
         AIO_MODE = sys.argv[3]
+        OLTP_TABLE_SIZE = sys.argv[4]
     except:
         quit("""Usage: \n$ ./multivm_setup_initiate.py \
-        [vm_hostnames path]  [cfg file]  [AIO mode: native / threads]""")
+        [vm_hostnames path]  [cfg file]  [AIO: native/threads] [OLTP SIZE]""")
 
     while '' in hosts: hosts.remove('')
     client = ParallelSSHClient(hosts, user=USERNAME)
@@ -109,7 +110,8 @@ if __name__=='__main__':
     execute_script(client, hosts, DIRNAME, 'setup_sysbench.sh',
             config.get('client', 'password'))
     execute_script(client, hosts, DIRNAME, 'start_sysbench_tests.sh',
-            '%s %s %s' % (USERNAME, config.get('client', 'password'), AIO_MODE),
+            '%s %s %s %s' % (USERNAME, config.get('client', 'password'),
+                AIO_MODE, OLTP_TABLE_SIZE),
             nohup=False)
 
     # OPTIONAL: setup_sysbench script makes it sure that previous installations
