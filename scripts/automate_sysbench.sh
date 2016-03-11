@@ -18,6 +18,16 @@ multivm_config_file=$1
 shift 1
 VM_LIST=$*
 
+if [[ ! $(basename $multivm_config_file) =~ ^multivm\.config$ ]]; then
+  echo "need multivm.config as 1st argument!"
+  exit -1
+fi
+
+if [[ ! -f $multivm_config_file ]]; then
+  echo "config file doesn't exist!"
+  exit -1
+fi
+
 # This file would be populated with *currently running* VM hostnames/IPs
 hostname_config_file=/tmp/vm_hostnames
 
@@ -37,10 +47,19 @@ fi
 rm -f $hostname_config_file
 echo "getting hostname/IP for all VMs.."
 for current_vm in $VM_LIST; do
-  MAC_ADDR=$(virsh domiflist "$current_vm" | tail -n 2  | head -n 1 | awk -F' ' '{print $NF}')
-  echo $(arp -e | grep $MAC_ADDR | tail -n 1 | awk -F' ' '{print $1}') >> $hostname_config_file
+  MAC_ADDR=$(virsh domiflist "$current_vm" 2>&1 | tail -n 2  | head -n 1 | awk -F' ' '{print $NF}')
+  if [[ -z $MAC_ADDR ]]; then
+    echo  "domain $current_vm not found! moving on.."
+  else
+    echo $(arp -e | grep $MAC_ADDR | tail -n 1 | awk -F' ' '{print $1}') >> $hostname_config_file
+  fi
 done
 # for i in $(seq 1 8); do echo "$i $(arp -e | grep $(virsh domiflist "vm$i" | tail -n 2  | head -n 1 | awk -F' ' '{print $NF}') | tail -n 1 | awk -F' ' '{print $1}')"; done;
+
+if [[ ! -s $hostname_config_file ]]; then
+  echo "$hostname_config_file was found to be empty after trying to store IPs of VM names supplied by you.."
+  exit 1
+fi
 
 echo
 for i in $(cat $hostname_config_file); do
