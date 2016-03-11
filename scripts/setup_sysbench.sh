@@ -99,6 +99,11 @@ cleanup_mysql_setup(){
   mkdir -p /home/$AIO_MODE/mysql_data/
   mkdir -p $RESULTS_DIR
 
+  cd $MULTIVM_ROOT_DIR
+  rm -rf /tools/
+  tar -xvzf sysbench_utilities.tgz
+  mv tools/ /
+
   chown -R mysql:mysql /home/$AIO_MODE/mysql_data/
   chcon -R --type=mysqld_db_t /home/$AIO_MODE/mysql_data/
   chgrp -R mysql /home/$AIO_MODE/mysql_data/
