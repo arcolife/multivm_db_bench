@@ -1,11 +1,8 @@
 #!/bin/bash
 
-# Usage:
-# ./automate_sysbench.sh <vm seq# BEGIN> <vm seq# END>
-# Refer to README Usage section for more details..
-
 [ $# = 0 ] && {
-  echo "usage: ./automate_sysbench.sh <multivm.config path> <vm1> <vm2> <vm3>...";
+  echo "Usage: ./automate_sysbench.sh <multivm.config path> <vm1> <vm2> <vm3>...";
+  echo "Refer to README Usage section for more details.."
   echo "example: ./automate_sysbench.sh multivm.config vm{1..8}";
   exit -1;
 }

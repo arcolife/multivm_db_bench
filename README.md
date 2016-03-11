@@ -12,10 +12,10 @@ Refer to Prerequisites section first.
 For entry point use (from within `scripts/` folder):
 
 ```
-./automate_sysbench.sh <vm seq# BEGIN> <vm seq# END>
+./automate_sysbench.sh <multivm.config path> <vm1> <vm2> <vm3>...
 ```
 
-- For example: `./automate_sysbench.sh 2 4` would run this setup
+- For example: `./automate_sysbench.sh  multivm.config vm{2..4}` would run this setup
   on vm2, vm3 and vm4.
 - Assuming: vms are named in sequential order, as vm1, vm2 etc..
   Example, on doing `virsh list` we would get vm1, vm2, etc..
@@ -26,15 +26,8 @@ __IMPORTANT__
   when ssh session ends.. This affects the execution of sysbench on VMs. So run
   this software as demonstrated in following example:
 
-  - step 1: `./automate_sysbench.sh 1 8`
+  - step 1: `./automate_sysbench.sh  multivm.config vm{1..8}`
   - step 2: `./run_sysbench_display_stats_hack.sh`
-
-  - make sure this is same in both scripts ..whatever you set it to be.
-    ```
-    AIO_MODE='native'
-    OLTP_TABLE_SIZE=1000000
-    ```
-
   - ..then check if results are popping up in a VM, under `/root/scripts/results`
 
 
