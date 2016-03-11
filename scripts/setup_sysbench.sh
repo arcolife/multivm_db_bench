@@ -8,9 +8,7 @@ user_interrupt(){
 trap user_interrupt SIGINT
 trap user_interrupt SIGTSTP
 
-AIO_MODE=$1
-MYSQL_PASS=$2
-MYSQL_PASS_OLD=$3
+source /etc/multivm.config
 
 if [[ -z $MYSQL_PASS ]]; then
   echo "need MYSQL_PASS as arg 2"
@@ -33,7 +31,7 @@ start_mysql_setup(){
   yum -y install MariaDB-devel  gcc gcc-c++ autoconf automake make libtool \
   zlib zlib-devel openssl-devel
 
-  cd /root/
+  cd $MULTIVM_ROOT_DIR
   tar xvfz sysbench-0.4.12.tar.gz
   cd sysbench-0.4.12
 
@@ -47,14 +45,17 @@ start_mysql_setup(){
 
   yum install -y MySQL-server
 
-  # mysqld_safe --user=root --basedir=/usr --skip-grant-tables &
+  # mysqld_safe --user=$MYSQL_USERNAME --basedir=/usr --skip-grant-tables &
   systemctl start mysql
 
-  mysqladmin -u root --password="$MYSQL_PASS_OLD" password  "$MYSQL_PASS"
+  mysqladmin -u $MYSQL_USERNAME --password="$MYSQL_PASS_OLD" password  "$MYSQL_PASS"
 
   systemctl stop mysql
 
-  cp /root/my.cnf.example /etc/my.cnf
+  cp ${MULTIVM_ROOT_DIR%/}/my.cnf.example /etc/my.cnf
+
+  sed -i 's#user=.*#user='$MYSQL_USERNAME'#'g /etc/my.cnf
+  sed -i 's#password=.*#password='$MYSQL_PASS'#'g /etc/my.cnf
 
   mkdir -p /home/{native,threads}/mysql_data/
   chown -R mysql:mysql /home/{native,threads}/mysql_data/
@@ -64,10 +65,8 @@ start_mysql_setup(){
   restorecon -R /var/lib/mysql/
   chown -R mysql:mysql /var/lib/mysql/
 
-  cd /root/
-  mkdir -p /root/scripts/results/
-  mv sysbench_utilities.tgz /root/scripts/
-  cd /root/scripts/
+  mkdir -p $RESULTS_DIR
+  cd $MULTIVM_ROOT_DIR
   tar -xvzf sysbench_utilities.tgz
   mv tools/ /
   systemctl start mysql
@@ -78,6 +77,7 @@ start_mysql_setup(){
   else
     echo "failed to start mysql instance.."
     exit 1
+  fi
 }
 
 remove_setup_traces(){
@@ -90,18 +90,20 @@ remove_setup_traces(){
 
 cleanup_mysql_setup(){
   systemctl stop mysql
-
+  echo "removing sbtest db.."
   rm -rf /var/lib/mysql/sbtest/
   restorecon -R /var/lib/mysql/
   chown -R mysql:mysql /var/lib/mysql/
 
-  rm -f /home/$AIO_MODE/mysql_data/
+  echo "resetting dirs for $AIO_MODE.."
+  rm -rf /home/$AIO_MODE/mysql_data/
   mkdir -p /home/$AIO_MODE/mysql_data/
 
   chown -R mysql:mysql /home/$AIO_MODE/mysql_data/
   chcon -R --type=mysqld_db_t /home/$AIO_MODE/mysql_data/
   chgrp -R mysql /home/$AIO_MODE/mysql_data/
 
+  echo "starting mysql.."
   systemctl start mysql
   mysql_service_status=$(systemctl status mysql | grep "active (running)")
   if [[ ! -z $mysql_service_status ]]; then
@@ -110,6 +112,7 @@ cleanup_mysql_setup(){
   else
     echo "failed to start mysql instance.."
     exit 1
+  fi
 }
 
 mysql_service_status=$(systemctl status mysql | grep "not-found")
@@ -120,3 +123,4 @@ if [[ -z $mysql_service_status ]]; then
 else
   remove_setup_traces
   start_mysql_setup
+fi

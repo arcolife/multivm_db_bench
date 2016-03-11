@@ -1,14 +1,13 @@
 #!/bin/bash
 
-AIO_MODE='native'
-OLTP_TABLE_SIZE=1000000
+source /etc/multivm.config
 
 for i in `cat /tmp/vm_hostnames`; do
   echo "running sysbench on: $i"
-  ssh root@$i "/root/start_sysbench_tests.sh root 90feet- $AIO_MODE $OLTP_TABLE_SIZE"
+  ssh root@$i "${MULTIVM_ROOT_DIR%/}/start_sysbench_tests.sh"
 done
 
 for i in `cat /tmp/vm_hostnames`; do
     echo "displaying results file on: $i"
-    ssh root@$i "ls -lh /root/scripts/results /root/scripts/"
+    ssh root@$i "ls -lh ${RESULTS_DIR%/}"
 done
