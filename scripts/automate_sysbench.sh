@@ -69,7 +69,7 @@ fi
 echo
 for i in $(cat $hostname_config_file); do
   echo "attempting to kill sysbench related processes and reset root dirs on: $i"
-  ssh $VM_LOGIN_USER@$i "kill -9 $(pgrep run-sysbench); kill -9 $(pgrep profit3); rm -f ${RESULTS_DIR%/}/{*$AIO*.log,*$AIO*.txt}; echo 2 > /proc/sys/vm/drop_caches; mkdir -p $MULTIVM_ROOT_DIR"
+  ssh $VM_LOGIN_USER@$i "pkill sysbenc; rm -f ${RESULTS_DIR%/}/{*$AIO*.log,*$AIO*.txt}; echo 2 > /proc/sys/vm/drop_caches; mkdir -p $MULTIVM_ROOT_DIR"
 done
 
 ./multivm_setup_initiate.py $hostname_config_file $multivm_config_file
