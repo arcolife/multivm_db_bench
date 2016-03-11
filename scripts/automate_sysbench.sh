@@ -1,5 +1,13 @@
 #!/bin/bash
 
+user_interrupt(){
+    echo -e "\n\nKeyboard Interrupt detected."
+    exit
+}
+
+trap user_interrupt SIGINT
+trap user_interrupt SIGTSTP
+
 [ $# = 0 ] && {
   echo "Usage: ./automate_sysbench.sh <multivm.config path> <vm1> <vm2> <vm3>...";
   echo "Refer to README Usage section for more details.."

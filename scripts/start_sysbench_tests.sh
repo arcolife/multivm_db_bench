@@ -1,5 +1,13 @@
 #!/bin/bash
 
+user_interrupt(){
+    echo -e "\n\nKeyboard Interrupt detected."
+    exit
+}
+
+trap user_interrupt SIGINT
+trap user_interrupt SIGTSTP
+
 source /etc/multivm.config
 
 if [[ ! $AIO_MODE =~ ^(native|threads)$ ]]; then

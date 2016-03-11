@@ -1,5 +1,13 @@
 #!/bin/bash
 
+user_interrupt(){
+    echo -e "\n\nKeyboard Interrupt detected."
+    exit
+}
+
+trap user_interrupt SIGINT
+trap user_interrupt SIGTSTP
+
 [ $# = 0 ] && {
   echo "usage: ./run_sysbench_display_stats_hack.sh <multivm.config path>";
   echo "example: ./run_sysbench_display_stats_hack.sh multivm.config";
