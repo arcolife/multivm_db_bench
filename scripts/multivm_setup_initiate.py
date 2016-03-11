@@ -4,104 +4,111 @@
 # Author: Archit Sharma <archit.py@gmail.com>
 
 import os, sys
-import configparser
 from pssh import ParallelSSHClient, utils
 
-# utils.enable_host_logger()
+class SetupMultiVM(object):
+    """
+    Initiate parallel ssh connection and add basic methods like:
+    file display, delete, execute, copy etc..
+    """
 
-USERNAME='root'
-DIRNAME = '/root/'
-UTIL_NAMES = ['sysbench_utilities.tgz', 'sysbench-0.4.12.tar.gz', 'my.cnf.example']
-SCRIPT_NAMES = ['setup_sysbench.sh', 'start_sysbench_tests.sh']
+    def __init__(client, hosts, args):
+        self.hosts = hosts
+        self.client = ParallelSSHClient(hosts, user=args['VM_LOGIN_USER'])
+        self.ROOT_DIR = args['MULTIVM_ROOT_DIR']
+        self.AIO_MODE = args['AIO_MODE']
+        self.SCRIPT_NAMES = '{%s}' % ','.join(args['SCRIPT_NAMES'])
+        self.UTIL_NAMES = '{%s}' % ','.join(args['UTIL_NAMES'])
+        self.FILENAMES = '{%s}' % ','.join(args['SCRIPT_NAMES'] + args['UTIL_NAMES'])
 
-FILENAMES = SCRIPT_NAMES + UTIL_NAMES
-
-
-def display_files(client, hosts, msg, files_to_display, target_dir):
-    print(msg)
-    output = client.run_command('ls -lh ' + os.path.join(target_dir, '{%s}' %
-                                                (','.join(files_to_display))))
-    client.get_exit_codes(output)
-    for host in hosts:
-        print("host: %s -- exit_code: %s" %(host, output[host]['exit_code']))
-        for line in output[host]['stdout']: print line
-        print
-
-def make_executable(client, hosts, target_files, target_dir):
-    print("changing mode +x for all scripts..\n")
-    output = client.run_command('chmod +x ' + os.path.join(target_dir, '{%s}' %
-                                                (','.join(target_files))))
-    client.get_exit_codes(output)
-    for host in hosts:
-        print("host: %s -- exit_code: %s" %(host, output[host]['exit_code']))
-        try:
+    def display_files(self, msg=''):
+        print("\n%s\n" % msg)
+        output = self.client.run_command('ls -lh ' + os.path.join(self.ROOT_DIR,
+                                                        self.FILENAMES))
+        self.client.get_exit_codes(output)
+        for host in self.hosts:
+            print("host: %s -- exit_code: %s" %(host, output[host]['exit_code']))
             for line in output[host]['stdout']: print line
-        except:
-            pass
+            print
 
-def copy_files(client, files_to_copy, target_dir):
-    print("\ncopying files to VMs..\n")
-    for filename in files_to_copy:
-        client.copy_file('./%s'%(filename),
-                        os.path.join(target_dir, '%s' % (filename)))
+    def make_executable(self):
+        print("changing mode +x for all scripts..\n")
+        output = self.client.run_command('chmod +x %s' %
+                                            os.path.join(self.ROOT_DIR,
+                                            self.SCRIPT_NAMES))
+        self.client.get_exit_codes(output)
+        for host in self.hosts:
+            print("host: %s -- exit_code: %s" %(host, output[host]['exit_code']))
+            try:
+                for line in output[host]['stdout']: print line
+            except:
+                pass
 
-    client.pool.join()
+    def copy_files(self):
+        print("\ncopying files to VMs..\n")
+        for filename in self.FILENAMES.split(','):
+            self.client.copy_file('./%s' % (filename),
+                            os.path.join(self.ROOT_DIR, '%s' % (filename)))
+        # additionally copy the config file to /etc
+        self.client.copy_file('./multivm.config', '/etc/multivm.config')
+        # join pool and execute copy commands
+        self.client.pool.join()
 
-def delete_files(client, hosts, files_to_delete, target_dir):
-    print("\ndeleting existing files..\n")
-    output = client.run_command('rm -f ' + os.path.join(target_dir, '{%s}' %
-                                                (','.join(files_to_delete))))
-    client.get_exit_codes(output)
-    for host in hosts:
-        print("host: %s -- exit_code: %s" %(host, output[host]['exit_code']))
+    def delete_files(self):
+        print("\ndeleting existing files..\n")
+        output = self.client.run_command('rm -f %s' %
+                                            os.path.join(self.ROOT_DIR,
+                                            self.FILENAMES))
+        self.client.get_exit_codes(output)
+        for host in self.hosts:
+            print("host: %s -- exit_code: %s" %(host, output[host]['exit_code']))
 
-def record_output(generator_object, host, aio_mode, script_name):
-    log_file = '/tmp/%s.%s.%s.log' % (aio_mode, host, script_name)
-    f = open(log_file, 'wb')
-    print("Hold on.. Logging VM outputs to your host under: %s" % log_file)
-    for line in generator_object:
-        f.write(line.encode('utf-8') + "\n")
-    f.close()
+    def record_output(self, generator_object, vm_hostname, script_name):
+        log_file = '/tmp/%s.%s.%s.log' % (self.AIO_MODE, vm_hostname, script_name)
+        f = open(log_file, 'wb')
+        print("Hold on.. Logging VM outputs to your host under: %s" % log_file)
+        for line in generator_object:
+            f.write(line.encode('utf-8') + "\n")
+        f.close()
 
-def execute_script(client, hosts, aio_mode, target_dir, script_name, args, nohup=False):
-    script_path =  os.path.join(target_dir, script_name)
-    print("\nexecuting script: '%s %s'..\n" % (script_path, args))
-    if nohup:
-        CMD = 'nohup  %s %s > /tmp/%s.out 2> /tmp/%s.err < /dev/null &' % \
-                            (script_path, args, script_name, script_name)
-    else:
-        CMD = '%s %s' % (script_path, args)
+    def execute_script(self, script_name=None, script_args='', nohup=False):
+        script_path =  os.path.join(self.ROOT_DIR, script_name)
+        print("\nexecuting script: '%s %s'..\n" % (script_path, script_args))
+        if nohup:
+            CMD = 'nohup  %s %s > /tmp/%s.out 2> /tmp/%s.err < /dev/null &' % \
+                            (script_path, script_args, script_name, script_name)
+        else:
+            CMD = '%s %s' % (script_path, script_args)
 
-    output = client.run_command(CMD)
-    client.get_exit_codes(output)
-    for host in hosts:
-        print("host: %s -- exit_code: %s" %(host, output[host]['exit_code']))
-        # for line in output[host]['stdout']: print line
-        record_output(output[host]['stdout'], host, aio_mode, script_name)
+        output = self.client.run_command(CMD)
+        self.client.get_exit_codes(output)
+        for host in self.hosts:
+            print("host: %s -- exit_code: %s" %(host, output[host]['exit_code']))
+            # for line in output[host]['stdout']: print line
+            self.record_output(output[host]['stdout'], script_name)
 
 if __name__=='__main__':
     try:
         hosts = set(open(sys.argv[1], 'rb').read().splitlines())
-        config = configparser.ConfigParser()
-        config.read(sys.argv[2])
-        AIO_MODE = sys.argv[3]
-        OLTP_TABLE_SIZE = sys.argv[4]
+        while '' in hosts: hosts.remove('')
+        args = {}
+        for cfg in set(open(sys.argv[2], 'rb').read().splitlines()):
+            if 'MULTIVM_ROOT_DIR=' in cfg or 'AIO_MODE=' in cfg \
+                                        or 'VM_LOGIN_USER=' in cfg:
+                args([cfg.split("=")])
+            elif 'UTIL_NAMES=' in cfg or 'SCRIPT_NAMES=' in cfg:
+                k,v = cfg.split("=")
+                v = v.split(',')
+                args([k,v])
     except:
-        quit("""Usage: \n$ ./multivm_setup_initiate.py \
-        [vm_hostnames path]  [cfg file]  [AIO: native/threads] [OLTP SIZE]""")
+        quit("""Usage:
+        ./multivm_setup_initiate.py [hostnames filepath] [multivm.config filepath]""")
 
-    while '' in hosts: hosts.remove('')
-    client = ParallelSSHClient(hosts, user=USERNAME)
-
-    delete_files(client, hosts, FILENAMES, DIRNAME)
-    copy_files(client, FILENAMES, DIRNAME)
-    make_executable(client, hosts, SCRIPT_NAMES, DIRNAME)
-    display_files(client, hosts, "\noutput AFTER COPYING files..\n",
-                FILENAMES, DIRNAME)
-
-    execute_script(client, hosts, AIO_MODE, DIRNAME, 'setup_sysbench.sh',
-            '%s %s' % (AIO_MODE, config.get('client', 'password')))
-    execute_script(client, hosts, AIO_MODE, DIRNAME, 'start_sysbench_tests.sh',
-            '%s %s %s %s' % (USERNAME, config.get('client', 'password'),
-                AIO_MODE, OLTP_TABLE_SIZE),
-            nohup=False)
+    # utils.enable_host_logger()
+    SM = SetupMultiVM(hosts, args)
+    SM.delete_files()
+    SM.copy_files()
+    SM.make_executable()
+    SM.display_files(msg="output AFTER COPYING files..")
+    SM.execute_script(name='setup_sysbench.sh')
+    SM.execute_script(name='start_sysbench_tests.sh')
