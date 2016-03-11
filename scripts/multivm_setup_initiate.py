@@ -12,19 +12,19 @@ class SetupMultiVM(object):
     file display, delete, execute, copy etc..
     """
 
-    def __init__(client, hosts, args):
+    def __init__(self, hosts, args):
         self.hosts = hosts
         self.client = ParallelSSHClient(hosts, user=args['VM_LOGIN_USER'])
         self.ROOT_DIR = args['MULTIVM_ROOT_DIR']
         self.AIO_MODE = args['AIO_MODE']
         self.SCRIPT_NAMES = '{%s}' % ','.join(args['SCRIPT_NAMES'])
         self.UTIL_NAMES = '{%s}' % ','.join(args['UTIL_NAMES'])
-        self.FILENAMES = '{%s}' % ','.join(args['SCRIPT_NAMES'] + args['UTIL_NAMES'])
+        self.FILENAMES = ','.join(args['SCRIPT_NAMES'] + args['UTIL_NAMES'])
 
     def display_files(self, msg=''):
         print("\n%s\n" % msg)
         output = self.client.run_command('ls -lh ' + os.path.join(self.ROOT_DIR,
-                                                        self.FILENAMES))
+                                                        '{%s}' % self.FILENAMES))
         self.client.get_exit_codes(output)
         for host in self.hosts:
             print("host: %s -- exit_code: %s" %(host, output[host]['exit_code']))
@@ -58,7 +58,7 @@ class SetupMultiVM(object):
         print("\ndeleting existing files..\n")
         output = self.client.run_command('rm -f %s' %
                                             os.path.join(self.ROOT_DIR,
-                                            self.FILENAMES))
+                                            '{%s}' % self.FILENAMES))
         self.client.get_exit_codes(output)
         for host in self.hosts:
             print("host: %s -- exit_code: %s" %(host, output[host]['exit_code']))
@@ -85,30 +85,31 @@ class SetupMultiVM(object):
         for host in self.hosts:
             print("host: %s -- exit_code: %s" %(host, output[host]['exit_code']))
             # for line in output[host]['stdout']: print line
-            self.record_output(output[host]['stdout'], script_name)
+            self.record_output(output[host]['stdout'], host, script_name)
 
 if __name__=='__main__':
     try:
         hosts = set(open(sys.argv[1], 'rb').read().splitlines())
         while '' in hosts: hosts.remove('')
-        args = {}
+        args_tmp = {}
         for cfg in set(open(sys.argv[2], 'rb').read().splitlines()):
             if 'MULTIVM_ROOT_DIR=' in cfg or 'AIO_MODE=' in cfg \
                                         or 'VM_LOGIN_USER=' in cfg:
-                args([cfg.split("=")])
+                args_tmp.update([cfg.split("=")])
             elif 'UTIL_NAMES=' in cfg or 'SCRIPT_NAMES=' in cfg:
                 k,v = cfg.split("=")
                 v = v.split(',')
-                args([k,v])
+                args_tmp.update([[k,v]])
     except:
-        quit("""Usage:
+        print("""Usage:
         ./multivm_setup_initiate.py [hostnames filepath] [multivm.config filepath]""")
+        raise
 
     # utils.enable_host_logger()
-    SM = SetupMultiVM(hosts, args)
+    SM = SetupMultiVM(hosts, args_tmp)
     SM.delete_files()
     SM.copy_files()
     SM.make_executable()
     SM.display_files(msg="output AFTER COPYING files..")
-    SM.execute_script(name='setup_sysbench.sh')
-    SM.execute_script(name='start_sysbench_tests.sh')
+    SM.execute_script(script_name='setup_sysbench.sh')
+    SM.execute_script(script_name='start_sysbench_tests.sh')
