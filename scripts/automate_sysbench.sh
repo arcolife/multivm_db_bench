@@ -47,17 +47,17 @@ fi
 rm -f $hostname_config_file
 echo "getting hostname/IP for all VMs.."
 for current_vm in $VM_LIST; do
-  MAC_ADDR=$(virsh domiflist "$current_vm" 2>&1 | tail -n 2  | head -n 1 | awk -F' ' '{print $NF}')
-  if [[ -z $MAC_ADDR ]]; then
-    echo  "domain $current_vm not found! moving on.."
+  if [[ -z $(virsh domstate $current_vm | grep running) ]]; then
+    echo  "$current_vm was found to be not running currently! moving on.."
   else
+    MAC_ADDR=$(virsh domiflist "$current_vm" 2>&1 | tail -n 2  | head -n 1 | awk -F' ' '{print $NF}')
     echo $(arp -e | grep $MAC_ADDR | tail -n 1 | awk -F' ' '{print $1}') >> $hostname_config_file
   fi
 done
 # for i in $(seq 1 8); do echo "$i $(arp -e | grep $(virsh domiflist "vm$i" | tail -n 2  | head -n 1 | awk -F' ' '{print $NF}') | tail -n 1 | awk -F' ' '{print $1}')"; done;
 
 if [[ ! -s $hostname_config_file ]]; then
-  echo "$hostname_config_file was found to be empty after trying to store IPs of VM names supplied by you.."
+  echo "$hostname_config_file was found to be empty after trying to store IPs of supplied (running) VMs.."
   exit 1
 fi
 
