@@ -55,15 +55,15 @@ def delete_files(client, hosts, files_to_delete, target_dir):
     for host in hosts:
         print("host: %s -- exit_code: %s" %(host, output[host]['exit_code']))
 
-def record_output(generator_object, host, script_name):
-    log_file = '/tmp/%s.%s.log' % (host, script_name)
+def record_output(generator_object, host, aio_mode, script_name):
+    log_file = '/tmp/%s.%s.%s.log' % (aio_mode, host, script_name)
     f = open(log_file, 'wb')
     print("Hold on.. Logging VM outputs to your host under: %s" % log_file)
     for line in generator_object:
         f.write(line.encode('utf-8') + "\n")
     f.close()
 
-def execute_script(client, hosts, target_dir, script_name, args, nohup=False):
+def execute_script(client, hosts, aio_mode, target_dir, script_name, args, nohup=False):
     script_path =  os.path.join(target_dir, script_name)
     print("\nexecuting script: '%s %s'..\n" % (script_path, args))
     if nohup:
@@ -77,7 +77,7 @@ def execute_script(client, hosts, target_dir, script_name, args, nohup=False):
     for host in hosts:
         print("host: %s -- exit_code: %s" %(host, output[host]['exit_code']))
         # for line in output[host]['stdout']: print line
-        record_output(output[host]['stdout'], host, script_name)
+        record_output(output[host]['stdout'], host, aio_mode, script_name)
 
 if __name__=='__main__':
     try:
@@ -99,9 +99,9 @@ if __name__=='__main__':
     display_files(client, hosts, "\noutput AFTER COPYING files..\n",
                 FILENAMES, DIRNAME)
 
-    execute_script(client, hosts, DIRNAME, 'setup_sysbench.sh',
+    execute_script(client, hosts, AIO_MODE, DIRNAME, 'setup_sysbench.sh',
             '%s %s' % (AIO_MODE, config.get('client', 'password')))
-    execute_script(client, hosts, DIRNAME, 'start_sysbench_tests.sh',
+    execute_script(client, hosts, AIO_MODE, DIRNAME, 'start_sysbench_tests.sh',
             '%s %s %s %s' % (USERNAME, config.get('client', 'password'),
                 AIO_MODE, OLTP_TABLE_SIZE),
             nohup=False)
