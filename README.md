@@ -3,8 +3,7 @@
 Some automation scripts to use for running sysbench benchmarks
 for different thread counts on multiple Virtual Machines, for MariaDB.
 
-This project is WIP. Use at your own risk
-(if you're able to get it! `:-)`)
+This project is WIP. Use at your own risk `:-)`
 
 ## Usage
 
@@ -15,11 +14,6 @@ For entry point use (from within `scripts/` folder):
 ./automate_sysbench.sh <multivm.config path> <vm1> <vm2> <vm3>...
 ```
 
-- For example: `./automate_sysbench.sh  multivm.config vm{2..4}` would run this setup
-  on vm2, vm3 and vm4.
-- Assuming: vms are named in sequential order, as vm1, vm2 etc..
-  Example, on doing `virsh list` we would get vm1, vm2, etc..
-
 __IMPORTANT__
 
   There's currently an issue with pssh and background process. It's being exited
@@ -28,7 +22,7 @@ __IMPORTANT__
 
   - step 1: `./automate_sysbench.sh  multivm.config vm{1..8}`
   - step 2: `./run_sysbench_display_stats_hack.sh`
-  - ..then check if results are popping up in a VM, under `/root/scripts/results`
+  - ..then check if results are popping up in a VM, under your results dir as per `multivm.config`
 
 
 __NOTE__:
@@ -90,23 +84,11 @@ __NOTE__:
 
   6. You have passwordless ssh access to all VMs from host machine.
 
-- __FYI__: Inside VMs, these scripts run:
-
-  ```
-  ./start_sysbench_tests.sh
-  ./setup_sysbench.sh
-  ```
-
 ## TODO:
 
   1. Ansiblize.
 
-  2. fix this really nasty README.md
-
-  3. Add vm xml files; demo script; disk formatting/attachment/mount
+  2. Add vm xml files; demo script; disk formatting/attachment/mount
      scripts.
 
-  4. pssh + background process issue debug
-
-  5. add a data collection script, to collect data from all machines at the end of each run
-     and if possible, emit them in json formats, ready to be indexed.
+  3. pssh + background process issue debug

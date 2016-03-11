@@ -65,9 +65,6 @@ gpgcheck=1
   chown -R mysql:mysql /var/lib/mysql/
 
   mkdir -p $RESULTS_DIR
-  cd $MULTIVM_ROOT_DIR
-  tar -xvzf sysbench_utilities.tgz
-  mv tools/ /
   systemctl start mysql
   mysql_service_status=$(systemctl status mysql | grep "active (running)")
   if [[ ! -z $mysql_service_status ]]; then
@@ -84,7 +81,6 @@ remove_setup_traces(){
   yum remove -y MySQL-server
   rm -rf /var/lib/mysql/
   rm -f /home/*/mysql_data/*
-  rm -rf /tools
 }
 
 cleanup_mysql_setup(){
@@ -98,11 +94,6 @@ cleanup_mysql_setup(){
   rm -rf /home/$AIO_MODE/mysql_data/
   mkdir -p /home/$AIO_MODE/mysql_data/
   mkdir -p $RESULTS_DIR
-
-  cd $MULTIVM_ROOT_DIR
-  rm -rf /tools/
-  tar -xvzf sysbench_utilities.tgz
-  mv tools/ /
 
   chown -R mysql:mysql /home/$AIO_MODE/mysql_data/
   chcon -R --type=mysqld_db_t /home/$AIO_MODE/mysql_data/

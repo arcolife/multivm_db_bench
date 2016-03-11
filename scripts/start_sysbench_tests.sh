@@ -63,9 +63,9 @@ echo "done preparing oltp tables for $AIO_MODE.."
 # sysbench --test=oltp --num-threads=12 --max-requests=1000000 --max-time=900 run > test.log
 
 echo "starting sysbench test for $AIO_MODE.."
-./run-sysbench.sh >> ${RESULTS_DIR%/}/$RESULTS_NAME.txt 2>&1 &
+${MULTIVM_ROOT_DIR%/}/run-sysbench.sh >> ${RESULTS_DIR%/}/$RESULTS_NAME.txt 2>&1 &
 
-# nohup ./run-sysbench-series.sh > ${RESULTS_DIR%/}/$RESULTS_NAME.txt 2> ${RESULTS_DIR%/}/$RESULTS_NAME.err < /dev/null &
+# nohup ${MULTIVM_ROOT_DIR%/}/run-sysbench-series.sh > ${RESULTS_DIR%/}/$RESULTS_NAME.txt 2> ${RESULTS_DIR%/}/$RESULTS_NAME.err < /dev/null &
 
 # if [ ! $? -eq 0 ]; then
 #     echo "$(date +'%Y-%m-%d %H:%M:%S'): failed to run sysbench.." >> /tmp/sysbench."$AIO_MODE".error.log
