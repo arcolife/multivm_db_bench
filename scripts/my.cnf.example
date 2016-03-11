@@ -14,6 +14,7 @@
 
 # This will be passed to all MariaDB clients
 [client]
+user=root
 password=90feet-
 
 # The MariaDB server
