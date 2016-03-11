@@ -18,15 +18,14 @@ fi
 start_mysql_setup(){
   yum-complete-transaction
 
-  echo "
-  # MariaDB 10.0 RedHat repository list - created 2015-08-20 13:31 UTC
-  # http://mariadb.org/mariadb/repositories/
-  [mariadb]
-  name = MariaDB
-  baseurl = http://yum.mariadb.org/10.0/rhel7-amd64
-  gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
-  gpgcheck=1
-  " > /etc/yum.repos.d/mariadb.repo
+  echo "[mariadb]
+# MariaDB 10.0 RedHat repository list - created 2015-08-20 13:31 UTC
+# http://mariadb.org/mariadb/repositories/
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.0/rhel7-amd64
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+" > /etc/yum.repos.d/mariadb.repo
 
   yum -y install MariaDB-devel  gcc gcc-c++ autoconf automake make libtool \
   zlib zlib-devel openssl-devel
@@ -98,6 +97,7 @@ cleanup_mysql_setup(){
   echo "resetting dirs for $AIO_MODE.."
   rm -rf /home/$AIO_MODE/mysql_data/
   mkdir -p /home/$AIO_MODE/mysql_data/
+  mkdir -p $RESULTS_DIR
 
   chown -R mysql:mysql /home/$AIO_MODE/mysql_data/
   chcon -R --type=mysqld_db_t /home/$AIO_MODE/mysql_data/
@@ -117,10 +117,10 @@ cleanup_mysql_setup(){
 
 mysql_service_status=$(systemctl status mysql | grep "not-found")
 
-if [[ -z $mysql_service_status ]]; then
-  # mysql service was found
-  cleanup_mysql_setup
-else
+if [[ ! -z $mysql_service_status ]] || [[ ! -z $1 ]]; then
+  # mysql service was not found; or forcefill reset was made..
   remove_setup_traces
   start_mysql_setup
+else
+  cleanup_mysql_setup
 fi

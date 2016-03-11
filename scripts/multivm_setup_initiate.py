@@ -111,5 +111,8 @@ if __name__=='__main__':
     SM.copy_files()
     SM.make_executable()
     SM.display_files(msg="output AFTER COPYING files..")
-    SM.execute_script(script_name='setup_sysbench.sh')
+    if sys.argv[-1] == '1':
+        SM.execute_script(script_name='setup_sysbench.sh', script_args='1')
+    else:
+        SM.execute_script(script_name='setup_sysbench.sh')
     SM.execute_script(script_name='start_sysbench_tests.sh')

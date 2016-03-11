@@ -73,3 +73,5 @@ for i in $(cat $hostname_config_file); do
 done
 
 ./multivm_setup_initiate.py $hostname_config_file $multivm_config_file
+# supply 1 at the end, if you wanna remove and reset previous mariadb/sysbench traces
+# ./multivm_setup_initiate.py $hostname_config_file $multivm_config_file 1
