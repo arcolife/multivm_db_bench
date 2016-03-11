@@ -56,26 +56,29 @@ __NOTE__:
 
 ## PREREQUISITES
 
-  1. Before starting, change the mysql password in config file `my.cnf.example`
+  1. Before starting, if needed, change the mysql password in config file `my.cnf.example`
   as under the following section/parameter:
 
     ```
     [client]
+    user=root
     password=90feet-
     ```
 
-  2. Ensure that `automate_sysbench.sh` has the following parameters as per your need:
+  2. Ensure that following major params are present corretly assigned under `multivm.config`:
 
     ```
     AIO_MODE='native'
     OLTP_TABLE_SIZE=1000000
     ```
+    Check other params as per need.
 
   3. Before running, ensure the following files in the same directory as `automate_sysbench.sh`:
 
     ```
     multivm_setup_initiate.py
     my.cnf.example
+    multivm.config
     setup_sysbench.sh
     start_sysbench_tests.sh
 
@@ -91,6 +94,8 @@ __NOTE__:
 
   5. Install the python2 module `parallel-ssh` via pip.
     (you'd have to temporarily enable epel repo for installing pip on rhel)
+
+  6. You have passwordless ssh access to all VMs from host machine.
 
 - __FYI__: Inside VMs, these scripts run:
 
