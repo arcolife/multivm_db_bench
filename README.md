@@ -7,31 +7,36 @@ This project is WIP. Use at your own risk `:-)`
 
 ## Usage
 
-Refer to Prerequisites section first.
-For entry point use (from within `scripts/` folder):
+__Refer to Prerequisites section first.__
+
+- For entry point use (from within `scripts/` folder):
 
 ```
 ./automate_sysbench.sh <multivm.config path> <vm1> <vm2> <vm3>...
 ```
 
+- Display contents of results dir (check whether they start filling up..)
+
+```
+./display_results_dir_contents.sh
+```
+
+- Later, on completion (in an hour or so), use this to collect all results..
+
+```
+./collect_sysbench_results.sh multivm.config
+```
+
 __IMPORTANT__
 
-  There's currently an issue with pssh and background process. It's being exited
-  when ssh session ends.. This affects the execution of sysbench on VMs. So run
-  this software as demonstrated in following example:
-
-  - step 1: `./automate_sysbench.sh  multivm.config vm{1..8}`
-  - step 2: `./run_sysbench_display_stats_hack.sh`
-  - step 3: ..then check if results are popping up in a VM, under your results dir as per `multivm.config`
-  - step 4: After you're sure that the tests have ended (based on default config, can take upto an hour or more)
-    step 5: `./collect_sysbench_results.sh multivm.config` to collect all results..
-
-  - Next time you run from step 1 after maybe changing an aio mode, sysbench setup
-    won't be installed again, but would only be cleaned. But if you wanna forcefully
-    reinstall sysbench, be sure to interchange commands to call `multivm_setup_initiate.py`
-    inside `automate_sysbench.sh` on the last line, to add a `1` at the end.
+Next time you run `automate_sysbench.sh` after maybe changing an aio mode,
+sysbench setup won't be installed again, but would only be cleaned.
+But if you wanna forcefully reinstall sysbench, be sure to interchange
+commands to call `multivm_setup_initiate.py` inside `automate_sysbench.sh`
+near the end of the script, to add a `1` at the end.
 
 __NOTE__:
+
   - Currently some pssh methods might be commented out in
     `multivm_setup_initiate.py`. Use as per requirement..
   - Also, if you're using `parallel-ssh==0.80.7` python2 package less than 0.90,

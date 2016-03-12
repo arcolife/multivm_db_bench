@@ -75,3 +75,9 @@ done
 ./multivm_setup_initiate.py $hostname_config_file $multivm_config_file
 # supply 1 at the end, if you wanna remove and reset previous mariadb/sysbench traces
 # ./multivm_setup_initiate.py $hostname_config_file $multivm_config_file 1
+
+# separate step for sysbench startup
+for i in `cat /tmp/vm_hostnames`; do
+    echo "running sysbench on: $i"
+    ssh root@$i "${MULTIVM_ROOT_DIR%/}/start_sysbench.sh"
+done

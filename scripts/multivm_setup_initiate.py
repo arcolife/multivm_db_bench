@@ -116,4 +116,4 @@ if __name__=='__main__':
     else:
         SM.execute_script(script_name='setup_sysbench.sh')
     SM.execute_script(script_name='prepare_sysbench_tests.sh')
-    SM.execute_script(script_name='start_sysbench.sh')
+    # SM.execute_script(script_name='start_sysbench.sh')
