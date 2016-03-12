@@ -18,13 +18,13 @@ __Refer to Prerequisites section first.__
 - Display contents of results dir (check whether they start filling up..)
 
 ```
-./display_results_dir_contents.sh
+./display_results_dir_contents.sh <multivm.config path>
 ```
 
 - Later, on completion (in an hour or so), use this to collect all results..
 
 ```
-./collect_sysbench_results.sh multivm.config
+./collect_sysbench_results.sh <multivm.config path>
 ```
 
 __IMPORTANT__

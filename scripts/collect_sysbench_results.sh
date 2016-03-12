@@ -22,6 +22,6 @@ if [[ ! $AIO_MODE =~ ^(native|threads)$ ]]; then
 fi
 
 for i in `cat /tmp/vm_hostnames`; do
-    echo "collecting results file on: $i"
+    echo "..collecting results file @ /tmp/"$i"_"$AIO_MODE"_transactions.txt"
     ssh root@$i "grep transac ${RESULTS_DIR%/}/*MariaDB*$AIO_MODE*txt" > /tmp/"$i"_"$AIO_MODE"_transactions.txt
 done
