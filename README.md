@@ -12,7 +12,11 @@ __Refer to Prerequisites section first.__
 - For entry point use (from within `scripts/` folder):
 
 ```
+# usage:
 ./automate_sysbench.sh <multivm.config path> <vm1> <vm2> <vm3>...
+
+# example:
+./automate_sysbench.sh  multivm.config vm{1..8}
 ```
 
 - Display contents of results dir (check whether they start filling up..)
