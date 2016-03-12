@@ -107,7 +107,7 @@ if __name__=='__main__':
 
     # utils.enable_host_logger()
     SM = SetupMultiVM(hosts, args_tmp)
-    SM.delete_files()
+    # SM.delete_files()
     SM.copy_files()
     SM.make_executable()
     SM.display_files(msg="output AFTER COPYING files..")
@@ -115,4 +115,5 @@ if __name__=='__main__':
         SM.execute_script(script_name='setup_sysbench.sh', script_args='1')
     else:
         SM.execute_script(script_name='setup_sysbench.sh')
-    SM.execute_script(script_name='start_sysbench_tests.sh')
+    SM.execute_script(script_name='prepare_sysbench_tests.sh')
+    SM.execute_script(script_name='start_sysbench.sh')
