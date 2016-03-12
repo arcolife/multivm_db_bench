@@ -22,8 +22,14 @@ __IMPORTANT__
 
   - step 1: `./automate_sysbench.sh  multivm.config vm{1..8}`
   - step 2: `./run_sysbench_display_stats_hack.sh`
-  - ..then check if results are popping up in a VM, under your results dir as per `multivm.config`
+  - step 3: ..then check if results are popping up in a VM, under your results dir as per `multivm.config`
+  - step 4: After you're sure that the tests have ended (based on default config, can take upto an hour or more)
+    step 5: `./collect_sysbench_results.sh multivm.config` to collect all results..
 
+  - Next time you run from step 1 after maybe changing an aio mode, sysbench setup
+    won't be installed again, but would only be cleaned. But if you wanna forcefully
+    reinstall sysbench, be sure to interchange commands to call `multivm_setup_initiate.py`
+    inside `automate_sysbench.sh` on the last line, to add a `1` at the end.
 
 __NOTE__:
   - Currently some pssh methods might be commented out in
