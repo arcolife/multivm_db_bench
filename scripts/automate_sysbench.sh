@@ -38,7 +38,6 @@ hostname_config_file=/tmp/vm_hostnames
 
 source $multivm_config_file
 
-##############################################
 if [[ ! -f sysbench-0.4.12.tar.gz ]]; then
   wget $DOWNLOAD_LINK
 fi
@@ -69,12 +68,10 @@ fi
 echo
 for i in $(cat $hostname_config_file); do
   echo "attempting to kill sysbench related processes and reset root dirs on: $i"
-  ssh $VM_LOGIN_USER@$i "pkill sysbenc; rm -f ${RESULTS_DIR%/}/{*$AIO*.log,*$AIO*.txt}; echo 2 > /proc/sys/vm/drop_caches; mkdir -p $MULTIVM_ROOT_DIR"
+  ssh $VM_LOGIN_USER@$i "pkill sysbenc; rm -f ${RESULTS_DIR%/}/{*$AIO_MODE*.log,*$AIO_MODE*.txt}; echo 2 > /proc/sys/vm/drop_caches; mkdir -p $MULTIVM_ROOT_DIR"
 done
 
-./multivm_setup_initiate.py $hostname_config_file $multivm_config_file
-# supply 1 at the end, if you wanna remove and reset previous mariadb/sysbench traces
-# ./multivm_setup_initiate.py $hostname_config_file $multivm_config_file 1
+./multivm_setup_initiate.py $hostname_config_file $multivm_config_file $REINSTALL_OPTION
 
 # separate step for sysbench startup
 for i in `cat /tmp/vm_hostnames`; do

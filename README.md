@@ -33,11 +33,10 @@ __Refer to Prerequisites section first.__
 
 __IMPORTANT__
 
-Next time you run `automate_sysbench.sh` after maybe changing an aio mode,
-sysbench setup won't be installed again, but would only be cleaned.
-But if you wanna forcefully reinstall sysbench, be sure to interchange
-commands to call `multivm_setup_initiate.py` inside `automate_sysbench.sh`
-near the end of the script, to add a `1` at the end.
+Next time, you run `automate_sysbench.sh` after maybe changing AIO_MODE,
+sysbench/mariadb setup won't be installed again, but would only be cleaned up.
+But if you wanna forcefully reinstall sysbench, be sure to update `REINSTALL_OPTION=1`
+in `multivm.config`.
 
 __NOTE__:
 
