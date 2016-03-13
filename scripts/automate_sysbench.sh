@@ -4,7 +4,7 @@ user_interrupt(){
     echo -e "\n\nKeyboard Interrupt detected."
     exit
 }
-1;2802;0c
+
 trap user_interrupt SIGINT
 trap user_interrupt SIGTSTP
 
