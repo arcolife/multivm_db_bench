@@ -24,9 +24,13 @@ RESULTS_NAME="$release_tag"_r"$rhel_version"_"${db_ver::-1}"_"$buffer_pool_size"
 
 # cd $MULTIVM_ROOT_DIR
 
-echo "starting sysbench test for $AIO_MODE.."
-${MULTIVM_ROOT_DIR%/}/run-sysbench.sh >> ${RESULTS_DIR%/}/$RESULTS_NAME.txt 2>&1 &
-
+if [[ $ENABLE_PBENCH -eq 1 ]]; then
+  echo "starting sysbench test (pbench enabled) for $AIO_MODE.."
+  ${MULTIVM_ROOT_DIR%/}/run-sysbench-pbench.sh $RESULTS_NAME >> ${RESULTS_DIR%/}/$RESULTS_NAME.txt 2>&1 &
+else
+  echo "starting sysbench test for $AIO_MODE.."
+  ${MULTIVM_ROOT_DIR%/}/run-sysbench.sh >> ${RESULTS_DIR%/}/$RESULTS_NAME.txt 2>&1 &
+fi
 # nohup ${MULTIVM_ROOT_DIR%/}/run-sysbench-series.sh > ${RESULTS_DIR%/}/$RESULTS_NAME.txt 2> ${RESULTS_DIR%/}/$RESULTS_NAME.err < /dev/null &
 
 # if [ ! $? -eq 0 ]; then
