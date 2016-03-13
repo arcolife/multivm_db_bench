@@ -75,18 +75,8 @@ __NOTE__:
     ```
     Check other params as per need.
 
-  3. Before running, ensure the following files in the same directory as `automate_sysbench.sh`:
-
-    ```
-    multivm_setup_initiate.py
-    my.cnf.example
-    multivm.config
-    setup_sysbench.sh
-    start_sysbench_tests.sh
-
-    sysbench_utilities.tgz
-    sysbench-0.4.12.tar.gz <optional; downloaded by script if not present>
-    ```
+  3. Before running, ensure all files in the same directory as `automate_sysbench.sh`, i.e., you're supposed to run this from under `scripts/` folder in this repo. This is
+  until there's a packaged release.
 
   4. The VM(s) should be up and running, and have the folders already mounted,
     as per the aio modes.
@@ -94,10 +84,10 @@ __NOTE__:
       - `/home/native` with `aio=native`
       - `/home/threads` with `aio=threads`
 
-  5. Install the python2 module `parallel-ssh` via pip.
+  5. Install the python2 module `parallel-ssh` via pip, on your host.
     (you'd have to temporarily enable epel repo for installing pip on rhel)
 
-  6. You have passwordless ssh access to all VMs from host machine.
+  6. Ensure you have passwordless ssh access to all VMs from host machine.
 
 ## TODO:
 
