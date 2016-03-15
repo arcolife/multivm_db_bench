@@ -38,6 +38,7 @@ hostname_config_file=/tmp/vm_hostnames
 
 source $multivm_config_file
 
+##############################################
 if [[ ! -f sysbench-0.4.12.tar.gz ]]; then
   wget $DOWNLOAD_LINK
 fi
@@ -68,13 +69,29 @@ fi
 echo
 for i in $(cat $hostname_config_file); do
   echo "attempting to kill sysbench related processes and reset root dirs on: $i"
-  ssh $VM_LOGIN_USER@$i "pkill sysbenc; rm -f ${RESULTS_DIR%/}/{*$AIO_MODE*.log,*$AIO_MODE*.txt}; echo 2 > /proc/sys/vm/drop_caches; mkdir -p $MULTIVM_ROOT_DIR"
+  ssh $VM_LOGIN_USER@$i "pkill sysbenc; rm -f ${RESULTS_DIR%/}/{*$AIO*.log,*$AIO*.txt}; echo 2 > /proc/sys/vm/drop_caches; mkdir -p $MULTIVM_ROOT_DIR"
 done
 
-./multivm_setup_initiate.py $hostname_config_file $multivm_config_file $REINSTALL_OPTION
+./multivm_setup_initiate.py $hostname_config_file $multivm_config_file
 
 # separate step for sysbench startup
-for i in `cat /tmp/vm_hostnames`; do
-    echo "running sysbench on: $i"
-    ssh root@$i "${MULTIVM_ROOT_DIR%/}/start_sysbench.sh"
-done
+if [[ $ENABLE_PBENCH -eq 1 ]]; then
+  clear-tools
+  kill-tools
+  register-tool-set
+  for machine in `cat /tmp/vm_hostnames`; do
+    echo "registering pbench tool-set on client: $machine"
+    register-tool-set --remote=$machine --label=sysbenchguest
+  done
+  user-benchmark --config=$CONFIG_NAME -- start_sysbench.sh
+fi
+
+else
+  for machine in `cat /tmp/vm_hostnames`; do
+    echo "running sysbench on client: $i"
+    ssh root@$machine "${MULTIVM_ROOT_DIR%/}/start_sysbench.sh"
+  done
+fi
+
+# move-results is taken care of in collect_sysbench_results script
+# postprocess-tools etc.. is taken care of by run-sysbench-pbench script
