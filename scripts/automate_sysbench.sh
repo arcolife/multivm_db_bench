@@ -84,8 +84,6 @@ if [[ $ENABLE_PBENCH -eq 1 ]]; then
     register-tool-set --remote=$machine --label=sysbenchguest
   done
   user-benchmark --config=$CONFIG_NAME -- start_sysbench.sh
-fi
-
 else
   for machine in `cat /tmp/vm_hostnames`; do
     echo "running sysbench on client: $i"
