@@ -10,6 +10,13 @@ trap user_interrupt SIGTSTP
 
 source /etc/multivm.config
 
+buffer_pool_size=$(grep buffer_pool_size /etc/my.cnf | awk -F' ' '{print $3}')
+release_tag=$(uname -r | awk -F'-' '{print $2}' |  awk -F'.' '{print $1}')
+rhel_version=$(awk -F' ' '{print $(NF-1)}' /etc/redhat-release)
+db_ver=$(mysql --version  | awk -F' ' '{print $5}')
+
+RESULTS_NAME="$release_tag"_r"$rhel_version"_"${db_ver::-1}"_"$buffer_pool_size"_"$AIO_MODE"_"$(date +'%Y-%m-%d_%H:%M:%S')"
+
 export PARAMS="--test=oltp --mysql-table-engine=innodb \
               --oltp-table-size=$OLTP_TABLE_SIZE \
               --max-time=$TIME --max-requests=0 \
