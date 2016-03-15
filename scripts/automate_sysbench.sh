@@ -78,6 +78,7 @@ done
 if [[ $ENABLE_PBENCH -eq 1 ]]; then
   clear-tools
   kill-tools
+  clear-results
   register-tool-set
   for machine in `cat /tmp/vm_hostnames`; do
     echo "registering pbench tool-set on client: $machine"
