@@ -76,16 +76,15 @@ done
 
 # separate step for sysbench startup
 if [[ $ENABLE_PBENCH -eq 1 ]]; then
-  clear-tools
-  kill-tools
-  register-tool-set
+  pbench-clear-tools
+  pbench-kill-tools
+  pbench-clear-results
+  pbench-register-tool-set
   for machine in `cat /tmp/vm_hostnames`; do
     echo "registering pbench tool-set on client: $machine"
-    register-tool-set --remote=$machine --label=sysbenchguest
+    pbench-register-tool-set --remote=$machine --label=sysbenchguest
   done
-  user-benchmark --config=$CONFIG_NAME -- start_sysbench.sh
-fi
-
+  pbench-user-benchmark --config=$CONFIG_NAME -- "./start_sysbench_remote.sh"
 else
   for machine in `cat /tmp/vm_hostnames`; do
     echo "running sysbench on client: $i"

@@ -10,6 +10,13 @@ trap user_interrupt SIGTSTP
 
 source /etc/multivm.config
 
+buffer_pool_size=$(grep buffer_pool_size /etc/my.cnf | awk -F' ' '{print $3}')
+release_tag=$(uname -r | awk -F'-' '{print $2}' |  awk -F'.' '{print $1}')
+rhel_version=$(awk -F' ' '{print $(NF-1)}' /etc/redhat-release)
+db_ver=$(mysql --version  | awk -F' ' '{print $5}')
+
+RESULTS_NAME="$release_tag"_r"$rhel_version"_"${db_ver::-1}"_"$buffer_pool_size"_"$AIO_MODE"_"$(date +'%Y-%m-%d_%H:%M:%S')"
+
 export PARAMS="--test=oltp --mysql-table-engine=innodb \
               --oltp-table-size=$OLTP_TABLE_SIZE \
               --max-time=$TIME --max-requests=0 \
@@ -22,15 +29,14 @@ date >> ${RESULTS_DIR%/}/$E_LOG_FILENAME
 uname -a >> ${RESULTS_DIR%/}/$E_LOG_FILENAME
 
 DESCRIP=$1
-clear-tools
-register-tool-set
-clear-results
+pbench-clear-tools
+pbench-clear-results
 # benchmark_run_dir=/var/lib/pbench-agent/sysbench_$DESCRIP
 
 for i in $THREADS; do
 
     # Prep for pbench
-    kill-tools
+    pbench-kill-tools
 
   ( # benchmark_results_dir=$benchmark_run_dir/$i
     # benchmark_tools_dir=$benchmark_results_dir/tools-default

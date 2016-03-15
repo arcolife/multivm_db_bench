@@ -26,6 +26,6 @@ for i in `cat /tmp/vm_hostnames`; do
     ssh root@$i "grep transac ${RESULTS_DIR%/}/*MariaDB*$AIO_MODE*txt" > /tmp/"$i"_"$AIO_MODE"_transactions.txt
 done
 
-move-results
-kill-tools
-clear-tools
+pbench-move-results
+pbench-kill-tools
+pbench-clear-tools
