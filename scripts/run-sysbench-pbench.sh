@@ -22,23 +22,24 @@ date >> ${RESULTS_DIR%/}/$E_LOG_FILENAME
 uname -a >> ${RESULTS_DIR%/}/$E_LOG_FILENAME
 
 DESCRIP=$1
+clear-tools
 register-tool-set
 clear-results
-benchmark_run_dir=/var/lib/pbench-agent/sysbench_$DESCRIP
+# benchmark_run_dir=/var/lib/pbench-agent/sysbench_$DESCRIP
 
 for i in $THREADS; do
 
     # Prep for pbench
     kill-tools
 
-  ( benchmark_results_dir=$benchmark_run_dir/$i
-    benchmark_tools_dir=$benchmark_results_dir/tools-default
+  ( # benchmark_results_dir=$benchmark_run_dir/$i
+    # benchmark_tools_dir=$benchmark_results_dir/tools-default
 
-    mkdir -p $benchmark_tools_dir
+    # mkdir -p $benchmark_tools_dir
 
-    metadata_log --dir=$benchmark_results_dir beg
+    # metadata_log --dir=$benchmark_results_dir beg
 
-    start-tools --group=default --iteration=$i --dir=$benchmark_tools_dir
+    # start-tools --group=default --iteration=$i --dir=$benchmark_tools_dir
 
     echo $TIME
     echo $DESCRIP
@@ -48,10 +49,10 @@ for i in $THREADS; do
     sysbench $PARAMS --num-threads=$i |
       grep transactions: | tee -a ${RESULTS_DIR%/}/$E_LOG_FILENAME
 
-    stop-tools --group=default --iteration=$i --dir=$benchmark_tools_dir
-    postprocess-tools --group=default --iteration=$i --dir=$benchmark_tools_dir
+    # stop-tools --group=default --iteration=$i --dir=$benchmark_tools_dir
+    # postprocess-tools --group=default --iteration=$i --dir=$benchmark_tools_dir
 
-    metadata_log --dir=$benchmark_results_dir end
+    # metadata_log --dir=$benchmark_results_dir end
   )
 
 done
@@ -59,6 +60,4 @@ done
 echo "<------------- sysbench test END" >> ${RESULTS_DIR%/}/$E_LOG_FILENAME
 echo >> ${RESULTS_DIR%/}/$E_LOG_FILENAME
 
-cp -p ${RESULTS_DIR%/}/$E_LOG_FILENAME $benchmark_run_dir
-
-move-results
+# cp -p ${RESULTS_DIR%/}/$E_LOG_FILENAME $benchmark_run_dir
