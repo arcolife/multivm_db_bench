@@ -34,7 +34,6 @@ if [[ ! -f $multivm_config_file ]]; then
 fi
 
 # This file would be populated with *currently running* VM hostnames/IPs
-hostname_config_file=/tmp/vm_hostnames
 
 source $multivm_config_file
 
@@ -49,29 +48,29 @@ fi
 # ./virt-attach-disk1.sh 8 lvm
 # for i in `seq 2 16`; do virsh deattach-disk vm$i vdb --persistent ; done
 
-rm -f $hostname_config_file
+rm -f $REMOTE_HOSTS_FILE
 echo "getting hostname/IP for all VMs.."
 for current_vm in $VM_LIST; do
     if [[ -z $(virsh domstate $current_vm | grep running) ]]; then
 	echo  "$current_vm was found to be not running currently! moving on.."
     else
 	MAC_ADDR=$(virsh domiflist "$current_vm" 2>&1 | tail -n 2  | head -n 1 | awk -F' ' '{print $NF}')
-	echo $(arp -e | grep $MAC_ADDR | tail -n 1 | awk -F' ' '{print $1}') >> $hostname_config_file
+	echo $(arp -e | grep $MAC_ADDR | tail -n 1 | awk -F' ' '{print $1}') >> $REMOTE_HOSTS_FILE
     fi
 done
 
-if [[ ! -s $hostname_config_file ]]; then
-    echo "$hostname_config_file was found to be empty after trying to store IPs of supplied (running) VMs.."
+if [[ ! -s $REMOTE_HOSTS_FILE ]]; then
+    echo "$REMOTE_HOSTS_FILE was found to be empty after trying to store IPs of supplied (running) VMs.."
     exit 1
 fi
 
 echo
-for machine in $(cat $hostname_config_file); do
+for machine in $(cat $REMOTE_HOSTS_FILE); do
     echo "attempting to kill sysbench related processes; setting up script & results dirs on: $machine"
     ssh $VM_LOGIN_USER@$machine "pkill sysbenc; rm -f ${RESULTS_DIR%/}/{*$AIO*.log,*$AIO*.txt}; echo 2 > /proc/sys/vm/drop_caches; mkdir -p $MULTIVM_ROOT_DIR;"
 done
 
-./multivm_setup_initiate.py $hostname_config_file $multivm_config_file
+./multivm_setup_initiate.py $REMOTE_HOSTS_FILE $multivm_config_file
 
 # separate step for sysbench startup
 if [[ $ENABLE_PBENCH -eq 1 ]]; then
@@ -80,7 +79,7 @@ if [[ $ENABLE_PBENCH -eq 1 ]]; then
     pbench-clear-results
     pbench-register-tool-set
 
-    for machine in $(cat $hostname_config_file); do
+    for machine in $(cat $REMOTE_HOSTS_FILE); do
 	echo "registering pbench tool-set on client: $machine"
 	ssh root@$machine "pbench-clear-tools; pbench-clear-results"
 	pbench-register-tool-set --remote=$machine --label=sysbenchguest
@@ -90,7 +89,7 @@ if [[ $ENABLE_PBENCH -eq 1 ]]; then
     # move-results is taken care of in collect_sysbench_results script
 else
 
-    for machine in $(cat $hostname_config_file); do
+    for machine in $(cat $REMOTE_HOSTS_FILE); do
 	echo "running sysbench on client: $machine"
 	ssh root@$machine '${MULTIVM_ROOT_DIR%/}/run-sysbench.sh >> ${RESULTS_DIR%/}/"$machine"_sysbench.txt 2>&1 &'
     done

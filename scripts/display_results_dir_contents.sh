@@ -16,7 +16,7 @@ trap user_interrupt SIGTSTP
 
 source $1
 
-for i in `cat /tmp/vm_hostnames`; do
+for i in $(cat $REMOTE_HOSTS_FILE); do
     echo "displaying results file on: $i"
     ssh root@$i "ls -lh ${RESULTS_DIR%/}"
 done

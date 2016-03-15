@@ -10,7 +10,7 @@ trap user_interrupt SIGTSTP
 
 source ./multivm.config
 
-for machine in $(cat $hostname_config_file); do
+for machine in $(cat $REMOTE_HOSTS_FILE); do
     echo "running sysbench on client: $machine"
     ssh root@$machine 'source /etc/multivm.config; ${MULTIVM_ROOT_DIR%/}/run-sysbench.sh >> ${RESULTS_DIR%/}/$(hostname)_sysbench.txt 2>&1 &'
 done
