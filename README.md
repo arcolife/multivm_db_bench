@@ -9,14 +9,26 @@ This project is WIP. Use at your own risk `:-)`
 
 __Refer to Prerequisites section first.__
 
+__IMPORTANT__
+
+- Next time, you run `automate_sysbench.sh` after maybe changing
+  `AIO_MODE`, sysbench/mariadb setup won't be installed again,
+  but would only be cleaned up. If you wanna forcefully reinstall
+  sysbench, be sure to update `REINSTALL_OPTION=1` in `multivm.config`.
+
+- `ENABLE_PBENCH=1` by default in multivm.config. Change to 0
+  or empty string, if not needed.
+
+#############
+
 - For entry point use (from within `scripts/` folder):
 
 ```
 # usage:
 ./automate_sysbench.sh <multivm.config path> <vm1> <vm2> <vm3>...
 
-# example:
-./automate_sysbench.sh  multivm.config vm{1..8}
+# example (use std output/error redirection to file since this runs for long)
+./automate_sysbench.sh  multivm.config vm{1..8} >> sysbench.log 2>&1 &
 ```
 
 - Display contents of results dir (check whether they start filling up..)
@@ -31,12 +43,7 @@ __Refer to Prerequisites section first.__
 ./collect_sysbench_results.sh <multivm.config path>
 ```
 
-__IMPORTANT__
-
-Next time, you run `automate_sysbench.sh` after maybe changing AIO_MODE,
-sysbench/mariadb setup won't be installed again, but would only be cleaned up.
-But if you wanna forcefully reinstall sysbench, be sure to update `REINSTALL_OPTION=1`
-in `multivm.config`.
+#############
 
 __NOTE__:
 
@@ -74,8 +81,9 @@ __NOTE__:
     ```
     Check other params as per need.
 
-  3. Before running, ensure all files in the same directory as `automate_sysbench.sh`, i.e., you're supposed to run this from under `scripts/` folder in this repo. This is
-  until there's a packaged release.
+  3. Before running, ensure all files in the same directory as
+     `automate_sysbench.sh`, i.e., you're supposed to run this from under
+     `scripts/` folder in this repo. This is until there's a packaged release.
 
   4. The VM(s) should be up and running, and have the folders already mounted,
     as per the aio modes.

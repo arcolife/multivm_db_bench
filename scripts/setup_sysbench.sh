@@ -81,6 +81,7 @@ remove_setup_traces(){
   yum remove -y MySQL-server
   rm -rf /var/lib/mysql/
   rm -f /home/*/mysql_data/*
+  rm -f ${MULTIVM_ROOT_DIR%/}/*
 }
 
 cleanup_mysql_setup(){
@@ -104,7 +105,7 @@ cleanup_mysql_setup(){
   mysql_service_status=$(systemctl status mysql | grep "active (running)")
   if [[ ! -z $mysql_service_status ]]; then
     # mysql instance was found running
-    echo "sysbench cleanup completed!"
+    echo "mariadb cleanup completed!"
   else
     echo "failed to start mysql instance.."
     exit 1
