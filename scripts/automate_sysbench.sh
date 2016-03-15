@@ -91,6 +91,6 @@ else
 
     for machine in $(cat $REMOTE_HOSTS_FILE); do
 	echo "running sysbench on client: $machine"
-	ssh root@$machine '${MULTIVM_ROOT_DIR%/}/run-sysbench.sh >> ${RESULTS_DIR%/}/"$machine"_sysbench.txt 2>&1 &'
+	ssh root@$machine "${MULTIVM_ROOT_DIR%/}/run-sysbench.sh >> ${RESULTS_DIR%/}/"$machine"_sysbench.txt 2>&1 &"
     done
 fi
