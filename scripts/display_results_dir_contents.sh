@@ -18,5 +18,6 @@ source $1
 
 for i in $(cat $REMOTE_HOSTS_FILE); do
     echo "displaying results file on: $i"
-    ssh root@$i "date; ls -lh ${RESULTS_DIR%/}"
+    ssh root@$i "echo; date; ls -lh ${RESULTS_DIR%/}; echo; cat ${RESULTS_DIR%/}/*_$AIO_MODE*txt"
+    echo "===================================================="
 done

@@ -49,10 +49,10 @@ fi
 # for i in `seq 2 16`; do virsh deattach-disk vm$i vdb --persistent ; done
 
 rm -f $REMOTE_HOSTS_FILE
-echo "getting hostname/IP for all VMs.."
+echo "....getting hostname/IP for all clients."
 for current_vm in $VM_LIST; do
     if [[ -z $(virsh domstate $current_vm | grep running) ]]; then
-	echo  "$current_vm was found to be not running currently! moving on.."
+	echo  "......$current_vm was found to be not running currently! moving on.."
     else
 	MAC_ADDR=$(virsh domiflist "$current_vm" 2>&1 | tail -n 2  | head -n 1 | awk -F' ' '{print $NF}')
 	echo $(arp -e | grep $MAC_ADDR | tail -n 1 | awk -F' ' '{print $1}') >> $REMOTE_HOSTS_FILE
@@ -60,13 +60,13 @@ for current_vm in $VM_LIST; do
 done
 
 if [[ ! -s $REMOTE_HOSTS_FILE ]]; then
-    echo "$REMOTE_HOSTS_FILE was found to be empty after trying to store IPs of supplied (running) VMs.."
+    echo "..$REMOTE_HOSTS_FILE was found to be empty after trying to store IPs of supplied (running) clients !"
     exit 1
 fi
 
 echo
 for machine in $(cat $REMOTE_HOSTS_FILE); do
-    echo "attempting to kill sysbench related processes; setting up script & results dirs on: $machine"
+    echo "....attempting to kill sysbench related pids, clear cache & set up bench scripts on: $machine"
     ssh $VM_LOGIN_USER@$machine "pkill sysbenc; rm -f ${RESULTS_DIR%/}/{*$AIO*.log,*$AIO*.txt}; echo 2 > /proc/sys/vm/drop_caches; mkdir -p $MULTIVM_ROOT_DIR;"
 done
 
@@ -80,17 +80,24 @@ if [[ $ENABLE_PBENCH -eq 1 ]]; then
     pbench-register-tool-set
 
     for machine in $(cat $REMOTE_HOSTS_FILE); do
-	echo "registering pbench tool-set on client: $machine"
-	ssh root@$machine "pbench-clear-tools; pbench-clear-results"
-	pbench-register-tool-set --remote=$machine --label=sysbenchguest
+      echo "....clearing pbench tool-set on client: $machine"
+    	ssh root@$machine "pbench-clear-tools; pbench-clear-results" &
     done
+    wait
+
+    for machine in $(cat $REMOTE_HOSTS_FILE); do
+      echo "....registering pbench tool-set on client: $machine"
+    	pbench-register-tool-set --remote=$machine --label=sysbenchguest &
+    done
+    wait
 
     pbench-user-benchmark --config=$CONFIG_NAME -- "./start_sysbench_remote.sh"
     # move-results is taken care of in collect_sysbench_results script
 else
 
     for machine in $(cat $REMOTE_HOSTS_FILE); do
-	echo "running sysbench on client: $machine"
-	ssh root@$machine "${MULTIVM_ROOT_DIR%/}/run-sysbench.sh >> ${RESULTS_DIR%/}/"$machine"_sysbench.txt 2>&1 &"
+    	echo "....running sysbench on client: $machine"
+    	ssh root@$machine "${MULTIVM_ROOT_DIR%/}/run-sysbench.sh >> ${RESULTS_DIR%/}/"$machine"_sysbench.txt 2>&1" &
     done
+    wait
 fi

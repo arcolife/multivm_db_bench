@@ -102,5 +102,3 @@ __NOTE__:
 
   2. Add vm xml files; demo script; disk formatting/attachment/mount
      scripts.
-
-  3. pssh + background process issue debug
