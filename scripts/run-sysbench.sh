@@ -22,34 +22,18 @@ export PARAMS="--test=oltp --mysql-table-engine=innodb \
               --max-time=$TIME --max-requests=0 \
               --mysql-user=$MYSQL_USERNAME --mysql-password=$MYSQL_PASS run"
 
-
 echo >> ${RESULTS_DIR%/}/$E_LOG_FILENAME
 echo >> ${RESULTS_DIR%/}/$E_LOG_FILENAME
-if [[ $ENABLE_PBENCH -eq 1 ]]; then
-  echo "sysbench test for $RESULTS_NAME (pbench enabled) START: ------------------->" >> ${RESULTS_DIR%/}/$E_LOG_FILENAME
-else
-  echo "sysbench test for $RESULTS_NAME START: ------------------->" >> ${RESULTS_DIR%/}/$E_LOG_FILENAME
-fi
+echo "sysbench test for $RESULTS_NAME START: ------------------->" >> ${RESULTS_DIR%/}/$E_LOG_FILENAME
 date >> ${RESULTS_DIR%/}/$E_LOG_FILENAME
 uname -a >> ${RESULTS_DIR%/}/$E_LOG_FILENAME
 
-# if [[ $ENABLE_PBENCH -eq 1 ]]; then
-#   pbench-clear-tools
-#   pbench-clear-results
-# fi
-
 for i in $THREADS; do
-
-  if [[ $ENABLE_PBENCH -eq 1 ]]; then
-    pbench-kill-tools
-  fi
-
-  ( printf "%3d: [%d secs] " $i $TIME
+    ( printf "%3d: [%d secs] " $i $TIME
     ${MULTIVM_ROOT_DIR%/}/profit3_sysbench.sh 200 ${RESULTS_DIR%/}/"$AIO_MODE"_sb_$i
     sysbench $PARAMS --num-threads=$i |
-      grep transactions: | tee -a ${RESULTS_DIR%/}/$E_LOG_FILENAME
-  ) >> ${RESULTS_DIR%/}/$RESULTS_NAME.txt
-
+    grep transactions: | tee -a ${RESULTS_DIR%/}/$E_LOG_FILENAME
+    ) >> ${RESULTS_DIR%/}/$RESULTS_NAME.txt
 done
 
 echo "<------------- sysbench test END" >> ${RESULTS_DIR%/}/$E_LOG_FILENAME

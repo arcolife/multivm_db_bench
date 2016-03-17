@@ -80,8 +80,8 @@ if [[ $ENABLE_PBENCH -eq 1 ]]; then
     pbench-register-tool-set
 
     for machine in $(cat $REMOTE_HOSTS_FILE); do
-      echo "....clearing pbench tool-set on client: $machine"
-    	ssh root@$machine "pbench-clear-tools; pbench-clear-results" &
+      echo "....setting sysbench run name in file; clearing pbench tool-set on client: $machine"
+    	ssh root@$machine "${MULTIVM_ROOT_DIR%/}/set_result_name.sh; pbench-clear-tools; pbench-clear-results" &
     done
     wait
 
@@ -91,8 +91,29 @@ if [[ $ENABLE_PBENCH -eq 1 ]]; then
     done
     wait
 
-    pbench-user-benchmark --config=$CONFIG_NAME -- "./start_sysbench_remote.sh"
-    # move-results is taken care of in collect_sysbench_results script
+    benchmark_run_dir=/var/lib/pbench-agent/$CONFIG_NAME
+    DESCRIP="$CONFIG_NAME"_"$AIO_MODE"_"$thread"
+
+    for $thread in $(cat $THREADS); do
+      pbench-kill-tools
+      # pbench-user-benchmark --config=$DESCRIP -- "./start_sysbench_remote.sh $thread"
+      benchmark_results_dir=$benchmark_run_dir/$thread
+      benchmark_tools_dir=$benchmark_results_dir/tools-default
+      mkdir -p $benchmark_tools_dir
+      pbench-metadata-log --dir=$benchmark_results_dir beg
+      pbench-start-tools --group=default --iteration=$thread --dir=$benchmark_tools_dir
+      ./start_sysbench_remote.sh $thread
+      pbench-stop-tools --group=default --iteration=$thread --dir=$benchmark_tools_dir
+      pbench-postprocess-tools --group=default --iteration=$thread --dir=$benchmark_tools_dir
+      pbench-metadata-log --dir=$benchmark_results_dir end
+    done
+
+    for machine in $(cat $REMOTE_HOSTS_FILE); do
+      ssh root@$machine "echo "<------------- sysbench test END" >> ${RESULTS_DIR%/}/$E_LOG_FILENAME"
+      ssh root@$machine "echo >> ${RESULTS_DIR%/}/$E_LOG_FILENAME"
+      ssh root@$machine "cp -p ${RESULTS_DIR%/}/$E_LOG_FILENAME $benchmark_run_dir"
+    done
+
 else
 
     for machine in $(cat $REMOTE_HOSTS_FILE); do
@@ -101,3 +122,5 @@ else
     done
     wait
 fi
+
+# move-results is taken care of in collect_sysbench_results script
