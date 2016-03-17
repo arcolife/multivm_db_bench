@@ -13,9 +13,9 @@ trap user_interrupt SIGINT
 trap user_interrupt SIGTSTP
 
 [ $# = 0 ] && {
-    echo "Usage: ./automate_sysbench.sh <multivm.config path> <vm1> <vm2> <vm3>...";
+    echo "Usage: ./automate_sysbench.sh <multivm.config path> <vm1> <vm2> <vm3>..."
     echo "Refer to README Usage section for more details.."
-    echo "example: ./automate_sysbench.sh multivm.config vm{1..8}";
+    echo "example: ./automate_sysbench.sh multivm.config vm{1..8}"
     exit -1
 }
 
@@ -27,19 +27,29 @@ multivm_config_file=$1
 shift 1
 VM_LIST=$*
 
+source $multivm_config_file
+
+
 if [[ ! $(basename $multivm_config_file) =~ ^multivm\.config$ ]]; then
-    echo "need multivm.config as 1st argument!"
+    echo "need multivm.config as 1st argument!" > sysbench.$AIO_MODE.log
     exit -1
 fi
 
 if [[ ! -f $multivm_config_file ]]; then
-    echo "config file doesn't exist!"
+    echo "config file doesn't exist!" > sysbench.$AIO_MODE.log
     exit -1
 fi
 
 # This file would be populated with *currently running* VM hostnames/IPs
 
-source $multivm_config_file
+if [[ $(pgrep automate_sysben | wc -l) -gt 2 ]]; then
+  echo "more than 1 automate_sysbench scripts are currently running. Killing all." > sysbench.$AIO_MODE.log
+  echo "Committing suicide. Run me again to achieve nirvana!" >> sysbench.$AIO_MODE.log
+  pgrep automate_sysben | xargs kill -9
+  exit -1
+fi
+
+echo > sysbench.$AIO_MODE.log
 
 ##############################################
 if [[ ! -f sysbench-0.4.12.tar.gz ]]; then
