@@ -4,7 +4,9 @@ set -e
 
 user_interrupt(){
     echo -e "\n\nKeyboard Interrupt detected."
-    exit
+    pbench-kill-tools
+    pbench-clear-results
+    exit 1
 }
 
 trap user_interrupt SIGINT
@@ -14,7 +16,7 @@ trap user_interrupt SIGTSTP
     echo "Usage: ./automate_sysbench.sh <multivm.config path> <vm1> <vm2> <vm3>...";
     echo "Refer to README Usage section for more details.."
     echo "example: ./automate_sysbench.sh multivm.config vm{1..8}";
-    exit -1;
+    exit -1
 }
 
 # path to 'multivm.config'. Should be present in same dir as this script.
