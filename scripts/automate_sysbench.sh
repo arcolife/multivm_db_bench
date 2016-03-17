@@ -94,7 +94,7 @@ if [[ $ENABLE_PBENCH -eq 1 ]]; then
     done
     wait
 
-    DESCRIP="$CONFIG_NAME"_"$AIO_MODE"_"$thread"_"$(date +'%Y-%m-%d_%H:%M:%S')"
+    DESCRIP="$CONFIG_NAME"_"$AIO_MODE"_OLTP_"$OLTP_TABLE_SIZE"_"$(date +'%Y-%m-%d_%H:%M:%S')"
     benchmark_run_dir=/var/lib/pbench-agent/$DESCRIP
 
     for thread in $THREADS; do
