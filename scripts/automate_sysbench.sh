@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 user_interrupt(){
     echo -e "\n\nKeyboard Interrupt detected."
     exit
@@ -67,7 +69,7 @@ fi
 echo
 for machine in $(cat $REMOTE_HOSTS_FILE); do
     echo "....attempting to kill sysbench related pids, clear cache & set up bench scripts on: $machine"
-    ssh $VM_LOGIN_USER@$machine "pkill sysbenc; rm -f ${RESULTS_DIR%/}/{*$AIO*.log,*$AIO*.txt}; echo 2 > /proc/sys/vm/drop_caches; mkdir -p $MULTIVM_ROOT_DIR;"
+    ssh $VM_LOGIN_USER@$machine "pkill sysbenc; rm -f ${RESULTS_DIR%/}/{*$AIO*.log,*$AIO*.txt}; mkdir -p $MULTIVM_ROOT_DIR;"
 done
 
 ./multivm_setup_initiate.py $REMOTE_HOSTS_FILE $multivm_config_file
@@ -75,7 +77,6 @@ done
 # separate step for sysbench startup
 if [[ $ENABLE_PBENCH -eq 1 ]]; then
     pbench-clear-tools
-    pbench-kill-tools
     pbench-clear-results
     pbench-register-tool-set
 
@@ -91,20 +92,20 @@ if [[ $ENABLE_PBENCH -eq 1 ]]; then
     done
     wait
 
-    benchmark_run_dir=/var/lib/pbench-agent/$CONFIG_NAME
-    DESCRIP="$CONFIG_NAME"_"$AIO_MODE"_"$thread"
+    DESCRIP="$CONFIG_NAME"_"$AIO_MODE"_"$thread"_"$(date +'%Y-%m-%d_%H:%M:%S')"
+    benchmark_run_dir=/var/lib/pbench-agent/$DESCRIP
 
-    for $thread in $(cat $THREADS); do
-      pbench-kill-tools
+    for thread in $THREADS; do
+      echo "....killing pbench tools while running for thread count: $thread"
+      pbench-kill-tools > /dev/null 2>&1
       # pbench-user-benchmark --config=$DESCRIP -- "./start_sysbench_remote.sh $thread"
+      echo "....running pbench+sysbench for thread count: $thread"
       benchmark_results_dir=$benchmark_run_dir/$thread
-      benchmark_tools_dir=$benchmark_results_dir/tools-default
-      mkdir -p $benchmark_tools_dir
       pbench-metadata-log --dir=$benchmark_results_dir beg
-      pbench-start-tools --group=default --iteration=$thread --dir=$benchmark_tools_dir
+      pbench-start-tools --group=default --iteration=$thread --dir=$benchmark_results_dir
       ./start_sysbench_remote.sh $thread
-      pbench-stop-tools --group=default --iteration=$thread --dir=$benchmark_tools_dir
-      pbench-postprocess-tools --group=default --iteration=$thread --dir=$benchmark_tools_dir
+      pbench-stop-tools --group=default --iteration=$thread --dir=$benchmark_results_dir
+      pbench-postprocess-tools --group=default --iteration=$thread --dir=$benchmark_results_dir
       pbench-metadata-log --dir=$benchmark_results_dir end
     done
 

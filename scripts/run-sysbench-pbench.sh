@@ -9,6 +9,7 @@ trap user_interrupt SIGINT
 trap user_interrupt SIGTSTP
 
 RESULTS_NAME=$(cat ${RESULTS_DIR%/}/sysbench_run_result_name)
+echo 2 > /proc/sys/vm/drop_caches
 
 thread_count=$1
 export PARAMS="--test=oltp --mysql-table-engine=innodb \

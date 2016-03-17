@@ -29,6 +29,7 @@ date >> ${RESULTS_DIR%/}/$E_LOG_FILENAME
 uname -a >> ${RESULTS_DIR%/}/$E_LOG_FILENAME
 
 for i in $THREADS; do
+    echo 2 > /proc/sys/vm/drop_caches
     ( printf "%3d: [%d secs] " $i $TIME
     ${MULTIVM_ROOT_DIR%/}/profit3_sysbench.sh 200 ${RESULTS_DIR%/}/"$AIO_MODE"_sb_$i
     sysbench $PARAMS --num-threads=$i |
