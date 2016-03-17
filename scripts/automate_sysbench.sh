@@ -112,7 +112,7 @@ if [[ $ENABLE_PBENCH -eq 1 ]]; then
     done
 
     for machine in $(cat $REMOTE_HOSTS_FILE); do
-      ssh root@$machine "echo "<------------- sysbench test END" >> ${RESULTS_DIR%/}/$E_LOG_FILENAME"
+      ssh root@$machine "echo '<------------- sysbench test END' >> ${RESULTS_DIR%/}/$E_LOG_FILENAME"
       ssh root@$machine "echo >> ${RESULTS_DIR%/}/$E_LOG_FILENAME"
       ssh root@$machine "cp -p ${RESULTS_DIR%/}/$E_LOG_FILENAME $benchmark_run_dir"
     done

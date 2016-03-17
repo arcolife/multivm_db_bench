@@ -8,6 +8,8 @@ user_interrupt(){
 trap user_interrupt SIGINT
 trap user_interrupt SIGTSTP
 
+source /etc/multivm.config
+
 RESULTS_NAME=$(cat ${RESULTS_DIR%/}/sysbench_run_result_name)
 echo 2 > /proc/sys/vm/drop_caches
 
