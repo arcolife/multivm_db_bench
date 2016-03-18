@@ -114,7 +114,7 @@ cleanup_mysql_setup(){
 
 mysql_service_status=$(systemctl status mysql | grep "not-found")
 
-if [[ ! -z $mysql_service_status ]] || [[ ! -z $1 ]]; then
+if [[ ! -z $mysql_service_status ]] || [[ $REINSTALL_OPTION -eq 1 ]]; then
   # mysql service was not found; or forceful reset was made..
   remove_setup_traces
   start_mysql_setup
