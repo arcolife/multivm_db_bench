@@ -137,4 +137,9 @@ else
     wait
 fi
 
+for machine in $(cat $REMOTE_HOSTS_FILE); do
+    echo "..collecting results file in /tmp/ ..for: $machine"
+    scp root@$machine:${RESULTS_DIR%/}/*MariaDB*$AIO_MODE*txt /tmp/ &
+done
+
 # move-results is taken care of in collect_sysbench_results script
