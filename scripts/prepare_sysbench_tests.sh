@@ -44,7 +44,7 @@ fi
 
 # To prepare the database and load data
 echo "preparing oltp tables for $AIO_MODE.."
-sysbench prepare --test=oltp --mysql-table-engine=innodb --oltp-table-size=1000000 --mysql-user=$MYSQL_USERNAME --mysql-password=$MYSQL_PASS
+sysbench prepare --test=oltp --mysql-table-engine=innodb --oltp-table-size=$OLTP_TABLE_SIZE --mysql-user=$MYSQL_USERNAME --mysql-password=$MYSQL_PASS
 if [ ! $? -eq 0 ]; then
     echo "$(date +'%Y-%m-%d %H:%M:%S'): failed to prepare database sbtest.." >> /tmp/sysbench."$AIO_MODE".error.log
     exit 1
