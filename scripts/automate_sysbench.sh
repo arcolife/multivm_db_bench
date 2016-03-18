@@ -5,7 +5,7 @@ set -e
 user_interrupt(){
     echo -e "\n\nKeyboard Interrupt detected."
     pbench-kill-tools
-    pbench-clear-results
+    # pbench-clear-results
     exit 1
 }
 
@@ -40,7 +40,6 @@ if [[ ! -f $multivm_config_file ]]; then
     exit -1
 fi
 
-# This file would be populated with *currently running* VM hostnames/IPs
 
 if [[ $(pgrep automate_sysben | wc -l) -gt 2 ]]; then
   echo "more than 1 automate_sysbench scripts are currently running. Killing all." > sysbench.$AIO_MODE.log
@@ -62,7 +61,9 @@ fi
 # ./virt-attach-disk1.sh 8 lvm
 # for i in `seq 2 16`; do virsh deattach-disk vm$i vdb --persistent ; done
 
+# This file would be populated with *currently running* VM hostnames/IPs
 rm -f $REMOTE_HOSTS_FILE
+
 echo "....getting hostname/IP for all clients."
 for current_vm in $VM_LIST; do
     if [[ -z $(virsh domstate $current_vm | grep running) ]]; then
