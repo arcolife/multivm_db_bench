@@ -82,7 +82,7 @@ fi
 echo
 for machine in $(cat $REMOTE_HOSTS_FILE); do
     echo "....attempting to kill sysbench related pids, clear cache & set up bench scripts on: $machine"
-    ssh $VM_LOGIN_USER@$machine "pkill sysbenc; rm -f ${RESULTS_DIR%/}/{*$AIO*.log,*$AIO*.txt}; mkdir -p $MULTIVM_ROOT_DIR;"
+    ssh $VM_LOGIN_USER@$machine "pkill sysbenc; rm -f ${RESULTS_DIR%/}/{*$AIO_MODE*.log,*$AIO_MODE*.txt}; mkdir -p $MULTIVM_ROOT_DIR;"
 done
 
 ./multivm_setup_initiate.py $REMOTE_HOSTS_FILE $multivm_config_file
@@ -125,7 +125,7 @@ if [[ $ENABLE_PBENCH -eq 1 ]]; then
     for machine in $(cat $REMOTE_HOSTS_FILE); do
       ssh root@$machine "echo '<------------- sysbench test END' >> ${RESULTS_DIR%/}/$E_LOG_FILENAME"
       ssh root@$machine "echo >> ${RESULTS_DIR%/}/$E_LOG_FILENAME"
-      ssh root@$machine "cp -p ${RESULTS_DIR%/}/$E_LOG_FILENAME $benchmark_run_dir"
+      ssh root@$machine "cp -p ${RESULTS_DIR%/}/{$E_LOG_FILENAME,*$AIO_MODE*txt} $benchmark_run_dir"
     done
 
 else
