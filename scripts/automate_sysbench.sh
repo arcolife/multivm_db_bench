@@ -125,21 +125,22 @@ if [[ $ENABLE_PBENCH -eq 1 ]]; then
     for machine in $(cat $REMOTE_HOSTS_FILE); do
       ssh root@$machine "echo '<------------- sysbench test END' >> ${RESULTS_DIR%/}/$E_LOG_FILENAME"
       ssh root@$machine "echo >> ${RESULTS_DIR%/}/$E_LOG_FILENAME"
-      ssh root@$machine "cp -p ${RESULTS_DIR%/}/{$E_LOG_FILENAME,*$AIO_MODE*txt} $benchmark_run_dir"
+      results_name=$(ssh root@$machine cat ${RESULTS_DIR%/}/sysbench_run_result_name)
+      ssh root@$machine "cp -p ${RESULTS_DIR%/}/$results_name.txt ${benchmark_run_dir%/}/"$results_name"_"$OLTP_TABLE_SIZE"_"$machine".txt"
     done
 
 else
-
     for machine in $(cat $REMOTE_HOSTS_FILE); do
     	echo "....running sysbench on client: $machine"
-    	ssh root@$machine "${MULTIVM_ROOT_DIR%/}/run-sysbench.sh >> ${RESULTS_DIR%/}/"$machine"_sysbench.txt 2>&1" &
+    	ssh root@$machine "${MULTIVM_ROOT_DIR%/}/run-sysbench.sh 2>&1" &
     done
     wait
 fi
 
 for machine in $(cat $REMOTE_HOSTS_FILE); do
-    echo "..collecting results file in /tmp/ ..for: $machine"
-    scp root@$machine:${RESULTS_DIR%/}/*MariaDB*$AIO_MODE*txt /tmp/ &
+    results_name=$(ssh root@$machine cat ${RESULTS_DIR%/}/sysbench_run_result_name)
+    scp root@$machine:${RESULTS_DIR%/}/$results_name.txt /tmp/"$results_name"_"$OLTP_TABLE_SIZE"_"$machine".txt    
 done
+wait
 
 # move-results is taken care of in collect_sysbench_results script
