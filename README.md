@@ -96,9 +96,3 @@ __NOTE__:
 
   6. Ensure you have passwordless ssh access to all VMs from host machine.
 
-## TODO:
-
-  1. Ansiblize.
-
-  2. Add vm xml files; demo script; disk formatting/attachment/mount
-     scripts.
