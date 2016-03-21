@@ -44,13 +44,6 @@ gpgcheck=1
 
   yum install -y MySQL-server
 
-  # mysqld_safe --user=$MYSQL_USERNAME --basedir=/usr --skip-grant-tables &
-  systemctl start mysql
-
-  mysqladmin -u $MYSQL_USERNAME --password="$MYSQL_PASS_OLD" password  "$MYSQL_PASS"
-
-  systemctl stop mysql
-
   cp ${MULTIVM_ROOT_DIR%/}/my.cnf.example /etc/my.cnf
 
   sed -i 's#user=.*#user='$MYSQL_USERNAME'#'g /etc/my.cnf
@@ -65,7 +58,11 @@ gpgcheck=1
   chown -R mysql:mysql /var/lib/mysql/
 
   mkdir -p $RESULTS_DIR
+
+  # mysqld_safe --user=$MYSQL_USERNAME --basedir=/usr --skip-grant-tables &
   systemctl start mysql
+  mysqladmin -u $MYSQL_USERNAME --password="$MYSQL_PASS_OLD" password  "$MYSQL_PASS"
+
   mysql_service_status=$(systemctl status mysql | grep "active (running)")
   if [[ ! -z $mysql_service_status ]]; then
     # mysql instance was found running
