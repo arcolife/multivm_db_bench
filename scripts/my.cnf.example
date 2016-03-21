@@ -20,7 +20,7 @@ password=90feet-
 # The MariaDB server
 [mysqld]
 # Directory where you want to put your data
-#data=/home/native/mysql_data
+data=/home/native/mysql_data
 # Directory for the errmsg.sys file in the language you want to use
 #language=/usr/share/mysql/english
 # Create a file where the InnoDB/XtraDB engine stores it's data
