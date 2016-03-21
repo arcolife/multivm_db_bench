@@ -22,9 +22,12 @@ if [[ ! $AIO_MODE =~ ^(native|threads)$ ]]; then
 fi
 
 for machine in $(cat $REMOTE_HOSTS_FILE); do
-    echo "..collecting results file @ /tmp/"$machine"_"$AIO_MODE"_transactions.txt"
-    ssh root@$machine "grep transac ${RESULTS_DIR%/}/*MariaDB*$AIO_MODE*txt" > /tmp/"$machine"_"$AIO_MODE"_transactions.txt
+  echo "..collecting results file @ /tmp/"
+  results_name=$(ssh root@$machine cat ${RESULTS_DIR%/}/sysbench_run_result_name)
+  scp root@$machine:${RESULTS_DIR%/}/$results_name.txt /tmp/"$results_name"_"$OLTP_TABLE_SIZE"_"$machine".txt
+  # ssh root@$machine "grep transac ${RESULTS_DIR%/}/*MariaDB*$AIO_MODE*txt" > /tmp/"$machine"_"$AIO_MODE"_transactions.txt
 done
+wait
 
 pbench-move-results
 pbench-kill-tools
