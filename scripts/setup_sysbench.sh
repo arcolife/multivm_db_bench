@@ -52,14 +52,18 @@ gpgcheck=1
   cp ${MULTIVM_ROOT_DIR%/}/my.cnf.example /etc/my.cnf
   sed -i 's#user=.*#user='$MYSQL_USERNAME'#'g /etc/my.cnf
   sed -i 's#password=.*#password='$MYSQL_PASS'#'g /etc/my.cnf
-  mv /var/lib/mysql/{mysql/,performance_schema/} /home/$AIO_MODE/mysql_data/
+  sed -i 's#innodb_log_group_home_dir.*#innodb_log_group_home_dir = /home/'$AIO_MODE'/mysql_data#'g /etc/my.cnf
+  sed -i 's#innodb_data_home_dir.*#innodb_data_home_dir = /home/'$AIO_MODE'/mysql_data#'g /etc/my.cnf
+  sed -i 's#datadir=.*#datadir=/home/'$AIO_MODE'/mysql_data#'g /etc/my.cnf
 
+
+  mkdir -p $RESULTS_DIR
   mkdir -p /home/{native,threads}/mysql_data/
   chown -R mysql:mysql /home/{native,threads}/mysql_data/
   chcon -R --type=mysqld_db_t /home/{native,threads}/mysql_data/
   chgrp -R mysql /home/{native,threads}/mysql_data/
-  mkdir -p $RESULTS_DIR
-  
+
+  mv /var/lib/mysql/{mysql/,performance_schema/} /home/$AIO_MODE/mysql_data/
   # restorecon -R /var/lib/mysql/
   # chown -R mysql:mysql /var/lib/mysql/
   # mysqld_safe --user=$MYSQL_USERNAME --basedir=/usr --skip-grant-tables &
@@ -68,12 +72,12 @@ gpgcheck=1
 
   mysql_service_status=$(systemctl status mysql | grep "active (running)")
   if [[ ! -z $mysql_service_status ]]; then
-    # mysql instance was found running
-    echo "sysbench setup completed!"
+      # mysql instance was found running
+      echo "sysbench setup completed!"
   else
-    echo "failed to start mysql instance.."
-    exit 1
-  fi
+      echo "failed to start mysql instance.."
+      exit 1
+  fi  
 }
 
 remove_setup_traces(){
