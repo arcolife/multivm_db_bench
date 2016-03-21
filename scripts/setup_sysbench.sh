@@ -77,7 +77,8 @@ gpgcheck=1
 }
 
 remove_setup_traces(){
-  systemctl stop mysql
+  # pgrep mysql| xargs kill -9
+  mysqladmin -f -uroot  shutdown
   yum remove -y MySQL-server
   rm -rf /var/lib/mysql/
   rm -f /home/*/mysql_data/*
