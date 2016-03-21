@@ -44,21 +44,24 @@ gpgcheck=1
 
   yum install -y MySQL-server
 
-  cp ${MULTIVM_ROOT_DIR%/}/my.cnf.example /etc/my.cnf
+  # start/stop mysql once to let the tables form.
+  # otherwise it will fail.
+  systemctl start mysql
+  systemctl stop mysql
 
+  cp ${MULTIVM_ROOT_DIR%/}/my.cnf.example /etc/my.cnf
   sed -i 's#user=.*#user='$MYSQL_USERNAME'#'g /etc/my.cnf
   sed -i 's#password=.*#password='$MYSQL_PASS'#'g /etc/my.cnf
+  mv /var/lib/mysql/{mysql/,performance_schema/} /home/$AIO_MODE/mysql_data/
 
   mkdir -p /home/{native,threads}/mysql_data/
   chown -R mysql:mysql /home/{native,threads}/mysql_data/
   chcon -R --type=mysqld_db_t /home/{native,threads}/mysql_data/
   chgrp -R mysql /home/{native,threads}/mysql_data/
-
-  restorecon -R /var/lib/mysql/
-  chown -R mysql:mysql /var/lib/mysql/
-
   mkdir -p $RESULTS_DIR
-
+  
+  # restorecon -R /var/lib/mysql/
+  # chown -R mysql:mysql /var/lib/mysql/
   # mysqld_safe --user=$MYSQL_USERNAME --basedir=/usr --skip-grant-tables &
   systemctl start mysql
   mysqladmin -u $MYSQL_USERNAME --password="$MYSQL_PASS_OLD" password  "$MYSQL_PASS"
@@ -78,7 +81,8 @@ remove_setup_traces(){
   mysqladmin -f -uroot  shutdown
   yum remove -y MySQL-server
   rm -rf /var/lib/mysql/
-  rm -f /home/*/mysql_data/*
+  rm -rf /home/*/mysql_data/*
+  rm -f /etc/my.cnf
 }
 
 cleanup_mysql_setup(){
