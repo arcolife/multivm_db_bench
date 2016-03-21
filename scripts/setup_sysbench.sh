@@ -81,7 +81,6 @@ remove_setup_traces(){
   yum remove -y MySQL-server
   rm -rf /var/lib/mysql/
   rm -f /home/*/mysql_data/*
-  rm -f ${MULTIVM_ROOT_DIR%/}/*
 }
 
 cleanup_mysql_setup(){
