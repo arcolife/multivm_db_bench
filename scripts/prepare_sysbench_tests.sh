@@ -8,7 +8,7 @@ user_interrupt(){
 trap user_interrupt SIGINT
 trap user_interrupt SIGTSTP
 
-source /etc/multivm.config
+source /etc/multiclient.config
 
 if [[ ! $AIO_MODE =~ ^(native|threads)$ ]]; then
   echo "wrong AIO_MODE mode selected. choose native/threads"
@@ -17,9 +17,9 @@ fi
 
 systemctl stop mysql
 
-sed -i 's#innodb_log_group_home_dir.*#innodb_log_group_home_dir = /home/'$AIO_MODE'/mysql_data#'g /etc/my.cnf
-sed -i 's#innodb_data_home_dir.*#innodb_data_home_dir = /home/'$AIO_MODE'/mysql_data#'g /etc/my.cnf
-sed -i 's#datadir=.*#datadir=/home/'$AIO_MODE'/mysql_data#'g /etc/my.cnf
+sed -i 's#innodb_log_group_home_dir.*#innodb_log_group_home_dir = '${TARGET_VOLUME%/}/$MACHINE_IP/$AIO_MODE'/mysql_data#'g /etc/my.cnf
+sed -i 's#innodb_data_home_dir.*#innodb_data_home_dir = '${TARGET_VOLUME%/}/$MACHINE_IP/$AIO_MODE'/mysql_data#'g /etc/my.cnf
+sed -i 's#datadir=.*#datadir='${TARGET_VOLUME%/}/$MACHINE_IP/$AIO_MODE'/mysql_data#'g /etc/my.cnf
 
 systemctl start mysql
 if [ ! $? -eq 0 ]; then

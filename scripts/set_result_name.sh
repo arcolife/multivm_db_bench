@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source /etc/multivm.config
+source /etc/multiclient.config
 
 buffer_pool_size=$(grep buffer_pool_size /etc/my.cnf | awk -F' ' '{print $3}')
 release_tag=$(uname -r | awk -F'-' '{print $2}' |  awk -F'.' '{print $1}')

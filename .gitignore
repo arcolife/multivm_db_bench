@@ -3,5 +3,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+sysbench*.tar.gz
 dumps/
 *.log

@@ -11,4 +11,3 @@ sar -n DEV 3 $ntime > $2_nic.txt 2>&1&
 wait
 cat /proc/interrupts > $2_interrupts_stop.txt
 date
-

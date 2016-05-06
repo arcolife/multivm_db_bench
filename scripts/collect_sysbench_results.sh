@@ -9,12 +9,15 @@ trap user_interrupt SIGINT
 trap user_interrupt SIGTSTP
 
 [ $# = 0 ] && {
-  echo "usage: ./collect_sysbench_results.sh <multivm.config path>";
-  echo "example: ./collect_sysbench_results.sh multivm.config";
+  echo "usage: ./collect_sysbench_results.sh <multiclient.config path>";
+  echo "example: ./collect_sysbench_results.sh multiclient.config";
   exit -1;
 }
 
-source $1
+MULTICLIENT_CONFIG_FILE=multiclient.config
+REMOTE_HOSTS_FILE=client_hostnames.txt
+
+source $MULTICLIENT_CONFIG_FILE
 
 if [[ ! $AIO_MODE =~ ^(native|threads)$ ]]; then
   echo "wrong aio mode supplied. choose (native|threads)";

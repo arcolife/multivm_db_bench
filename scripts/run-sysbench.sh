@@ -8,7 +8,7 @@ user_interrupt(){
 trap user_interrupt SIGINT
 trap user_interrupt SIGTSTP
 
-source /etc/multivm.config
+source /etc/multiclient.config
 
 buffer_pool_size=$(grep buffer_pool_size /etc/my.cnf | awk -F' ' '{print $3}')
 release_tag=$(uname -r | awk -F'-' '{print $2}' |  awk -F'.' '{print $1}')
@@ -31,7 +31,7 @@ uname -a >> ${RESULTS_DIR%/}/$E_LOG_FILENAME
 for i in $THREADS; do
     echo 2 > /proc/sys/vm/drop_caches
     ( printf "%3d: [%d secs] " $i $TIME
-    ${MULTIVM_ROOT_DIR%/}/profit3_sysbench.sh 200 ${RESULTS_DIR%/}/"$AIO_MODE"_sb_$i
+    ${MULTICLIENT_ROOT_DIR%/}/profit3_sysbench.sh 200 ${RESULTS_DIR%/}/"$AIO_MODE"_sb_$i
     sysbench $PARAMS --num-threads=$i |
     grep transactions: | tee -a ${RESULTS_DIR%/}/$E_LOG_FILENAME
     ) >> ${RESULTS_DIR%/}/$RESULTS_NAME.txt

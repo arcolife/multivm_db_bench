@@ -6,7 +6,7 @@
 import os, sys
 from pssh import ParallelSSHClient, utils
 
-class SetupMultiVM(object):
+class SetupMultiClient(object):
     """
     Initiate parallel ssh connection and add basic methods like:
     file display, delete, execute, copy etc..
@@ -14,8 +14,8 @@ class SetupMultiVM(object):
 
     def __init__(self, hosts, args):
         self.hosts = hosts
-        self.client = ParallelSSHClient(hosts, user=args['VM_LOGIN_USER'])
-        self.ROOT_DIR = args['MULTIVM_ROOT_DIR']
+        self.client = ParallelSSHClient(hosts, user=args['CLIENT_LOGIN_USER'])
+        self.ROOT_DIR = args['MULTICLIENT_ROOT_DIR']
         self.AIO_MODE = args['AIO_MODE']
         self.SCRIPT_NAMES = '{%s}' % ','.join(args['SCRIPT_NAMES'])
         self.UTIL_NAMES = '{%s}' % ','.join(args['UTIL_NAMES'])
@@ -45,12 +45,12 @@ class SetupMultiVM(object):
                 pass
 
     def copy_files(self):
-        print("\ncopying files to VMs..\n")
+        print("\ncopying files to CLIENTs..\n")
         for filename in self.FILENAMES.split(','):
             self.client.copy_file('./%s' % (filename),
                             os.path.join(self.ROOT_DIR, '%s' % (filename)))
         # additionally copy the config file to /etc
-        self.client.copy_file('./multivm.config', '/etc/multivm.config')
+        self.client.copy_file('./multiclient.config', '/etc/multiclient.config')
         # join pool and execute copy commands
         self.client.pool.join()
 
@@ -63,10 +63,10 @@ class SetupMultiVM(object):
         for host in self.hosts:
             print("host: %s -- exit_code: %s" %(host, output[host]['exit_code']))
 
-    def record_output(self, generator_object, vm_hostname, script_name):
-        log_file = '/tmp/%s.%s.%s.log' % (self.AIO_MODE, vm_hostname, script_name)
+    def record_output(self, generator_object, client_hostname, script_name):
+        log_file = '/tmp/%s.%s.%s.log' % (self.AIO_MODE, client_hostname, script_name)
         f = open(log_file, 'wb')
-        print("Hold on.. Logging VM outputs to your host under: %s" % log_file)
+        print("Hold on.. Logging CLIENT outputs to your host under: %s" % log_file)
         for line in generator_object:
             f.write(line.encode('utf-8') + "\n")
         f.close()
@@ -93,8 +93,8 @@ if __name__=='__main__':
         while '' in hosts: hosts.remove('')
         args_tmp = {}
         for cfg in set(open(sys.argv[2], 'rb').read().splitlines()):
-            if 'MULTIVM_ROOT_DIR=' in cfg or 'AIO_MODE=' in cfg \
-                                        or 'VM_LOGIN_USER=' in cfg:
+            if 'MULTICLIENT_ROOT_DIR=' in cfg or 'AIO_MODE=' in cfg \
+                                        or 'CLIENT_LOGIN_USER=' in cfg:
                 args_tmp.update([cfg.split("=")])
             elif 'UTIL_NAMES=' in cfg or 'SCRIPT_NAMES=' in cfg:
                 k,v = cfg.split("=")
@@ -102,11 +102,11 @@ if __name__=='__main__':
                 args_tmp.update([[k,v]])
     except:
         print("""Usage:
-        ./multivm_setup_initiate.py [hostnames filepath] [multivm.config filepath]""")
+        ./multiclient_setup_initiate.py [hostnames filepath] [multiclient.config filepath]""")
         raise
 
     # utils.enable_host_logger()
-    SM = SetupMultiVM(hosts, args_tmp)
+    SM = SetupMultiClient(hosts, args_tmp)
     # SM.delete_files()
     SM.copy_files()
     SM.make_executable()

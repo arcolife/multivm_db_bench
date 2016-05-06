@@ -12,39 +12,33 @@ user_interrupt(){
 trap user_interrupt SIGINT
 trap user_interrupt SIGTSTP
 
-[ $# = 0 ] && {
-    echo "Usage: ./automate_sysbench.sh <multivm.config path> <vm1> <vm2> <vm3>..."
-    echo "Refer to README Usage section for more details.."
-    echo "example: ./automate_sysbench.sh multivm.config vm{1..8}"
-    exit -1
-}
+# path to 'multiclient.config' and file containing hostnames
+MULTICLIENT_CONFIG_FILE=multiclient.config
+REMOTE_HOSTS_FILE=client_hostnames.txt
 
-# path to 'multivm.config'. Should be present in same dir as this script.
-# Contains env vars: AIO mode, results dir name etc..
-# This file would also be copied to all vms.
-multivm_config_file=$1
+source $MULTICLIENT_CONFIG_FILE
 
-shift 1
-VM_LIST=$*
+echo "....Using client list from ./$REMOTE_HOSTS_FILE"
+echo "....Using config from $MULTICLIENT_CONFIG_FILE"
+echo "....parsing config from $MULTICLIENT_CONFIG_FILE"
 
-source $multivm_config_file
-
-
-if [[ ! $(basename $multivm_config_file) =~ ^multivm\.config$ ]]; then
-    echo "need multivm.config as 1st argument!" > sysbench.$AIO_MODE.log
+if [[ ! $(basename $MULTICLIENT_CONFIG_FILE) =~ ^multiclient\.config$ ]]; then
+    echo "need multiclient.config as 1st argument!" > sysbench.$AIO_MODE.log
+    echo "ERROR. check log file - sysbench.$AIO_MODE.log"
     exit -1
 fi
 
-if [[ ! -f $multivm_config_file ]]; then
+if [[ ! -f $MULTICLIENT_CONFIG_FILE ]]; then
     echo "config file doesn't exist!" > sysbench.$AIO_MODE.log
+    echo "ERROR. check log file - sysbench.$AIO_MODE.log"
     exit -1
 fi
-
 
 if [[ $(pgrep automate_sysben | wc -l) -gt 2 ]]; then
   echo "more than 1 automate_sysbench scripts are currently running. Killing all." > sysbench.$AIO_MODE.log
   echo "Committing suicide. Run me again to achieve nirvana!" >> sysbench.$AIO_MODE.log
   pgrep automate_sysben | xargs kill -9
+  echo "ERROR. check log file - sysbench.$AIO_MODE.log"
   exit -1
 fi
 
@@ -55,25 +49,6 @@ if [[ ! -f sysbench-0.4.12.tar.gz ]]; then
     wget $DOWNLOAD_LINK
 fi
 
-# for i in `seq $beg $end`; do virsh destroy  vm$i ; done
-# for i in `seq $beg $end`; do virsh start  vm$i ; done
-# for i  in `cat vm_ips`; ssh $VM_LOGIN_USER@i "mkfs.xfs /dev/vdb"; done
-# ./virt-attach-disk1.sh 8 lvm
-# for i in `seq 2 16`; do virsh deattach-disk vm$i vdb --persistent ; done
-
-# This file would be populated with *currently running* VM hostnames/IPs
-rm -f $REMOTE_HOSTS_FILE
-
-echo "....getting hostname/IP for all clients."
-for current_vm in $VM_LIST; do
-    if [[ -z $(virsh domstate $current_vm | grep running) ]]; then
-	echo  "......$current_vm was found to be not running currently! moving on.."
-    else
-	MAC_ADDR=$(virsh domiflist "$current_vm" 2>&1 | tail -n 2  | head -n 1 | awk -F' ' '{print $NF}')
-	echo $(arp -e | grep $MAC_ADDR | tail -n 1 | awk -F' ' '{print $1}') >> $REMOTE_HOSTS_FILE
-    fi
-done
-
 if [[ ! -s $REMOTE_HOSTS_FILE ]]; then
     echo "..$REMOTE_HOSTS_FILE was found to be empty after trying to store IPs of supplied (running) clients !"
     exit 1
@@ -82,10 +57,11 @@ fi
 echo
 for machine in $(cat $REMOTE_HOSTS_FILE); do
     echo "....attempting to kill sysbench related pids, clear cache & set up bench scripts on: $machine"
-    ssh $VM_LOGIN_USER@$machine "pkill sysbenc; rm -f ${RESULTS_DIR%/}/{*$AIO_MODE*.log,*$AIO_MODE*.txt}; mkdir -p $MULTIVM_ROOT_DIR;"
+    ssh $CLIENT_LOGIN_USER@$machine "pkill sysbenc; rm -f ${RESULTS_DIR%/}/{*$AIO_MODE*.log,*$AIO_MODE*.txt}; mkdir -p $MULTICLIENT_ROOT_DIR;"
 done
+wait
 
-./multivm_setup_initiate.py $REMOTE_HOSTS_FILE $multivm_config_file
+./multiclient_setup_initiate.py $REMOTE_HOSTS_FILE $MULTICLIENT_CONFIG_FILE
 
 # separate step for sysbench startup
 if [[ $ENABLE_PBENCH -eq 1 ]]; then
@@ -95,7 +71,7 @@ if [[ $ENABLE_PBENCH -eq 1 ]]; then
 
     for machine in $(cat $REMOTE_HOSTS_FILE); do
       echo "....setting sysbench run name in file; clearing pbench tool-set on client: $machine"
-    	ssh root@$machine "${MULTIVM_ROOT_DIR%/}/set_result_name.sh; pbench-clear-tools; pbench-clear-results" &
+    	ssh root@$machine "${MULTICLIENT_ROOT_DIR%/}/set_result_name.sh; pbench-clear-tools; pbench-clear-results" &
     done
     wait
 
@@ -132,14 +108,14 @@ if [[ $ENABLE_PBENCH -eq 1 ]]; then
 else
     for machine in $(cat $REMOTE_HOSTS_FILE); do
     	echo "....running sysbench on client: $machine"
-    	ssh root@$machine "${MULTIVM_ROOT_DIR%/}/run-sysbench.sh 2>&1" &
+    	ssh root@$machine "${MULTICLIENT_ROOT_DIR%/}/run-sysbench.sh 2>&1" &
     done
     wait
 fi
 
 for machine in $(cat $REMOTE_HOSTS_FILE); do
     results_name=$(ssh root@$machine cat ${RESULTS_DIR%/}/sysbench_run_result_name)
-    scp root@$machine:${RESULTS_DIR%/}/$results_name.txt /tmp/"$results_name"_"$OLTP_TABLE_SIZE"_"$machine".txt    
+    scp root@$machine:${RESULTS_DIR%/}/$results_name.txt /tmp/"$results_name"_"$OLTP_TABLE_SIZE"_"$machine".txt
 done
 wait
 
