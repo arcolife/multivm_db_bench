@@ -3,7 +3,9 @@
 Some automation scripts to use for running sysbench benchmarks
 for different thread counts on multiple Virtual Machines, for MariaDB.
 
-This project is WIP. Use at your own risk `:-)`
+NOTE: Switch to branch `multi-client` for a more generalistic approach
+of running sysbench with multiple clients, instead of VMs.
+Follow it's README for more help.
 
 ## Usage
 
