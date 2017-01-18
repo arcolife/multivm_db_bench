@@ -17,9 +17,9 @@ fi
 
 systemctl stop mysql
 
-sed -i 's#innodb_log_group_home_dir.*#innodb_log_group_home_dir = /home/'$AIO_MODE'/mysql_data#'g /etc/my.cnf
-sed -i 's#innodb_data_home_dir.*#innodb_data_home_dir = /home/'$AIO_MODE'/mysql_data#'g /etc/my.cnf
-sed -i 's#datadir=.*#datadir=/home/'$AIO_MODE'/mysql_data#'g /etc/my.cnf
+sed -i 's#innodb_log_group_home_dir.*#innodb_log_group_home_dir = '${MYSQL_DATA_DIR%/}'/'$AIO_MODE'/mysql_data#'g /etc/my.cnf
+sed -i 's#innodb_data_home_dir.*#innodb_data_home_dir = '${MYSQL_DATA_DIR%/}'/'$AIO_MODE'/mysql_data#'g /etc/my.cnf
+sed -i 's#datadir=.*#datadir='${MYSQL_DATA_DIR%/}'/'$AIO_MODE'/mysql_data#'g /etc/my.cnf
 
 systemctl start mysql
 if [ ! $? -eq 0 ]; then

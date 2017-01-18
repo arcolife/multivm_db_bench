@@ -52,18 +52,18 @@ gpgcheck=1
   cp ${MULTIVM_ROOT_DIR%/}/my.cnf.example /etc/my.cnf
   sed -i 's#user=.*#user='$MYSQL_USERNAME'#'g /etc/my.cnf
   sed -i 's#password=.*#password='$MYSQL_PASS'#'g /etc/my.cnf
-  sed -i 's#innodb_log_group_home_dir.*#innodb_log_group_home_dir = /home/'$AIO_MODE'/mysql_data#'g /etc/my.cnf
-  sed -i 's#innodb_data_home_dir.*#innodb_data_home_dir = /home/'$AIO_MODE'/mysql_data#'g /etc/my.cnf
-  sed -i 's#datadir=.*#datadir=/home/'$AIO_MODE'/mysql_data#'g /etc/my.cnf
+  sed -i 's#innodb_log_group_home_dir.*#innodb_log_group_home_dir = '${MYSQL_DATA_DIR%/}'/'$AIO_MODE'/mysql_data#'g /etc/my.cnf
+  sed -i 's#innodb_data_home_dir.*#innodb_data_home_dir = '${MYSQL_DATA_DIR%/}'/'$AIO_MODE'/mysql_data#'g /etc/my.cnf
+  sed -i 's#datadir=.*#datadir='${MYSQL_DATA_DIR%/}'/'$AIO_MODE'/mysql_data#'g /etc/my.cnf
 
 
   mkdir -p $RESULTS_DIR
-  mkdir -p /home/{native,threads}/mysql_data/
-  chown -R mysql:mysql /home/{native,threads}/mysql_data/
-  chcon -R --type=mysqld_db_t /home/{native,threads}/mysql_data/
-  chgrp -R mysql /home/{native,threads}/mysql_data/
+  mkdir -p ${MYSQL_DATA_DIR%/}/{native,threads}/mysql_data/
+  chown -R mysql:mysql ${MYSQL_DATA_DIR%/}/{native,threads}/mysql_data/
+  chcon -R --type=mysqld_db_t ${MYSQL_DATA_DIR%/}/{native,threads}/mysql_data/
+  chgrp -R mysql ${MYSQL_DATA_DIR%/}/{native,threads}/mysql_data/
 
-  mv /var/lib/mysql/{mysql/,performance_schema/} /home/$AIO_MODE/mysql_data/
+  mv /var/lib/mysql/{mysql/,performance_schema/} ${MYSQL_DATA_DIR%/}/$AIO_MODE/mysql_data/
   # restorecon -R /var/lib/mysql/
   # chown -R mysql:mysql /var/lib/mysql/
   # mysqld_safe --user=$MYSQL_USERNAME --basedir=/usr --skip-grant-tables &
@@ -77,7 +77,7 @@ gpgcheck=1
   else
       echo "failed to start mysql instance.."
       exit 1
-  fi  
+  fi
 }
 
 remove_setup_traces(){
@@ -85,7 +85,7 @@ remove_setup_traces(){
   mysqladmin -f -uroot  shutdown
   yum remove -y MySQL-server
   rm -rf /var/lib/mysql/
-  rm -rf /home/*/mysql_data/*
+  rm -rf ${MYSQL_DATA_DIR%/}/*/mysql_data/*
   rm -f /etc/my.cnf
 }
 
@@ -97,13 +97,13 @@ cleanup_mysql_setup(){
   chown -R mysql:mysql /var/lib/mysql/
 
   echo "resetting dirs for $AIO_MODE.."
-  rm -rf /home/$AIO_MODE/mysql_data/
-  mkdir -p /home/$AIO_MODE/mysql_data/
+  rm -rf ${MYSQL_DATA_DIR%/}/$AIO_MODE/mysql_data/
+  mkdir -p ${MYSQL_DATA_DIR%/}/$AIO_MODE/mysql_data/
   mkdir -p $RESULTS_DIR
 
-  chown -R mysql:mysql /home/$AIO_MODE/mysql_data/
-  chcon -R --type=mysqld_db_t /home/$AIO_MODE/mysql_data/
-  chgrp -R mysql /home/$AIO_MODE/mysql_data/
+  chown -R mysql:mysql ${MYSQL_DATA_DIR%/}/$AIO_MODE/mysql_data/
+  chcon -R --type=mysqld_db_t ${MYSQL_DATA_DIR%/}/$AIO_MODE/mysql_data/
+  chgrp -R mysql ${MYSQL_DATA_DIR%/}/$AIO_MODE/mysql_data/
 
   echo "starting mysql.."
   systemctl start mysql
